@@ -40,6 +40,8 @@ class UI {
             font: '34px Arial',
             fill: '#fff'
         });
+
+        this.scoreText.setScrollFactor(0);
     }
 
     updateScoreText(newScore) {

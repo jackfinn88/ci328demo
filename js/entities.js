@@ -84,8 +84,8 @@ class EnemyControl extends Control {
 
 class World {
     constructor(game) {
-        this.bg = game.add.image(0, 0, 'background_img');
-        this.bg.setOrigin(0, 0);
+        /*this.bg = game.add.image(0, 0, 'background_img');
+        this.bg.setOrigin(0, 0);*/
 
         this.player = new Player();
         this.player.onDeath(gameOver);
@@ -106,12 +106,13 @@ class World {
     }
 
     update() {
+        /*
         //  Scroll the background, reset it when it reaches the bottom
         this.bg.y += 2;
 
         if (this.bg.y >= 0) {
             this.bg.y = -phaser.config.height;
-        }
+        }*/
 
         this.enemyFactory.updateAllExists();
     }
