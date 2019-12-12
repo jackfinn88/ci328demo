@@ -1,0 +1,101 @@
+{
+    "pistol": {
+        "sprite": "pistol",
+        "velocity": 1000,
+        "fireRate": 20,
+        "barrelOffset": {
+            "x": 50,
+            "y": -15
+        },
+        "damage": 20,
+        "clipSize": 15,
+        "recoilX": false,
+        "reloadDuration": 750,
+        "equipped": false
+    },
+    "eagle": {
+        "sprite": "eagle",
+        "velocity": 1000,
+        "fireRate": 25,
+        "barrelOffset": {
+            "x": 50,
+            "y": -15
+        },
+        "damage": 50,
+        "clipSize": 7,
+        "recoilX": true,
+        "reloadDuration": 1000,
+        "equipped": false
+    },
+    "machine_pistol": {
+        "sprite": "m_pistol",
+        "velocity": 1000,
+        "fireRate": 10,
+        "barrelOffset": {
+            "x": 50,
+            "y": -15
+        },
+        "damage": 30,
+        "clipSize": 9,
+        "recoilX": false,
+        "reloadDuration": 700,
+        "equipped": false
+    },
+    "smg": {
+        "sprite": "smg",
+        "velocity": 1000,
+        "fireRate": 10,
+        "barrelOffset": {
+            "x": 20,
+            "y": -5
+        },
+        "damage": 35,
+        "clipSize": 25,
+        "recoilX": false,
+        "reloadDuration": 750,
+        "equipped": true
+    },
+    "rifle": {
+        "sprite": "rifle",
+        "velocity": 1000,
+        "fireRate": 10,
+        "barrelOffset": {
+            "x": 50,
+            "y": -5
+        },
+        "damage": 40,
+        "clipSize": 30,
+        "recoilX": false,
+        "reloadDuration": 850,
+        "equipped": false
+    },
+    "ak47": {
+        "sprite": "ak47",
+        "velocity": 1000,
+        "fireRate": 10,
+        "barrelOffset": {
+            "x": 40,
+            "y": -5
+        },
+        "damage": 45,
+        "clipSize": 35,
+        "recoilX": true,
+        "reloadDuration": 850,
+        "equipped": false
+    },
+    "shotgun": {
+        "sprite": "shotgun",
+        "velocity": 1000,
+        "fireRate": 40,
+        "barrelOffset": {
+            "x": 40,
+            "y": -5
+        },
+        "damage": 80,
+        "clipSize": 6,
+        "reloadAnim": "shotgun_reload",
+        "recoilX": true,
+        "reloadDuration": 1250,
+        "equipped": false
+    }
+}

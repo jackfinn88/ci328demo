@@ -65,7 +65,7 @@ class EntityFactory {
             this.nextBulletTime = game.time.now + 200;
         }*/
 
-        console.log('spawn as bullet')
+        console.log('spawn as bullet');
 
         //  Grab the first bullet we can from the pool
         const bullet = this.group.get(x, y);
@@ -75,6 +75,7 @@ class EntityFactory {
             bullet.body.allowGravity = false;
             bullet.outOfBoundsKill = true;
             bullet.checkWorldBounds = true;
+            bullet.setScale(0.5);
             bullet.body.setVelocityX(world.player.sprite.flipX ? -world.player.weapon.velocity : world.player.weapon.velocity, 0);
         }
 
@@ -147,12 +148,6 @@ class EntityFactory {
 }
 
 class EnemyControl extends Control {
-    onHit(enemy, projectile) {
-        console.log('enemy shot');
-        enemy.destroy();
-        projectile.destroy();
-    }
-
     onUpdate(container) {
         // container.x += 1;
         /*if (sprite.x + sprite.width + sprite.width >= phaser.config.width) {
@@ -178,7 +173,7 @@ class World {
         this.player = new Player();
         this.player.onDeath(gameOver);
 
-        this.bulletFactory = new EntityFactory('bullet_img');
+        this.bulletFactory = new EntityFactory('bullet');
         this.enemyFactory = new EntityFactory('player');
 
         this.numEnemies = 0;

@@ -20,6 +20,18 @@ var backgroundFar;
 var backgroundMid;
 var backgroundFront;
 
+function init() {
+
+    console.log("init()");
+
+    loadWeaponJSON((response) => {
+        weapons = JSON.parse(response);
+        console.log('main.js', weapons);
+    });
+
+    main();
+}
+
 function main() {
     console.log("main()");
 
@@ -55,13 +67,12 @@ function preload() {
     game = this;
     game.score = 0;
 
-    this.load.image('background_img', 'assets/gameBg.png');
+    this.weapons = weapons;
+
     this.load.image('bullet_img', 'assets/bullet.png');
     this.load.audio('intro', 'assets/audio/start.mp3');
     this.load.audio('bg', 'assets/audio/start.mp3');
-    //this.load.audio('bg', 'assets/audio/ufo_Theme.mp3');
     this.load.audio('explode', 'assets/audio/explode.mp3');
-    this.load.audio('fly', 'assets/audio/fly.mp3');
     this.load.audio('shoot', 'assets/audio/shoot.mp3');
     ///
 
@@ -74,19 +85,21 @@ function preload() {
     // player animations
     this.load.atlas('player', 'assets/player.png', 'assets/player.json');
 
-    // rifle image
-    this.load.image('rifle', 'assets/rifle.png');
-    this.load.image('pistol', 'assets/pistol.png');
+    // weapon images
+    this.load.image('bullet', 'assets/weapons/bullet.png');
+    this.load.image('rifle', 'assets/weapons/rifle.png');
+    this.load.image('eagle', 'assets/weapons/eagle.png');
+    this.load.image('pistol', 'assets/weapons/pistol.png');
+    this.load.image('smg', 'assets/weapons/smg.png');
+    this.load.image('ak47', 'assets/weapons/ak47.png');
+    this.load.image('m_pistol', 'assets/weapons/machine_pistol.png');
+    this.load.atlas('shotgun', 'assets/weapons/shotgun.png', 'assets/weapons/shotgun.json');
+
     // map made with Tiled in JSON format
     this.load.tilemapTiledJSON('map', 'assets/level01.json');
     // tiles in spritesheet 
     this.load.spritesheet('tiles', 'assets/industrial_tiles.png', { frameWidth: 70, frameHeight: 70 });
     this.load.image('spike', 'assets/spike.png');
-
-    this.load.image('background_bg', 'assets/backgrounds/level1/bg.png');
-    this.load.image('background_front', 'assets/backgrounds/level1/foreground.png');
-    this.load.image('background_mid', 'assets/backgrounds/level1/mid.png');
-    this.load.image('background_back', 'assets/backgrounds/level1/far.png');
 }
 
 /**
@@ -95,37 +108,6 @@ function preload() {
  */
 function create() {
     console.log("create()");
-
-    /*this.backgroundBg = game.add.tileSprite(0,
-        game.height - game.textures.get('background-bg').getSourceImage().height,
-        game.width,
-        game.textures.get('background-bg').getSourceImage().height,
-        'background-bg'
-    );
-
-    this.backgroundFront = game.add.tileSprite(0,
-        game.height - game.textures.get('background-front').getSourceImage().height,
-        game.width,
-        game.textures.get('background-front').getSourceImage().height,
-        'background-front'
-    );
-
-    this.backgroundMid = game.add.tileSprite(0,
-        game.height - game.textures.get('background-mid').getSourceImage().height,
-        game.width,
-        game.textures.get('background-mid').getSourceImage().height,
-        'background-mid'
-    );
-
-    this.backgroundFar = game.add.tileSprite(0,
-        game.height - game.textures.get('background-far').getSourceImage().height,
-        game.width,
-        game.textures.get('background-far').getSourceImage().height,
-        'background-far'
-    );*/
-
-    // this.backgroundFar.fixedToCamera = true;
-
 
     // load the map 
     map = this.make.tilemap({ key: 'map' });
@@ -144,49 +126,6 @@ function create() {
 
     // coinLayer.setTileIndexCallback(17, collectCoin, game);
     // when the player overlaps with a tile with index 17, collectCoin 
-    /*this.backgroundBg = game.add.tileSprite(
-        2500,
-        1500,
-        game.textures.get('background_bg').source[0].width,
-        game.textures.get('background_bg').source[0].height,
-        'background_bg'
-    );
-    this.backgroundBg.setOrigin(0, 0);
-    this.backgroundBg.setScale(5, 5);
-    this.backgroundBg.fixedToCamera = true;
-    this.backgroundFar = game.add.tileSprite(
-        2500,
-        1500,
-        game.textures.get('background_back').source[0].width,
-        game.textures.get('background_back').source[0].height,
-        'background_back'
-    );
-    this.backgroundFar.setOrigin(0, 0);
-    this.backgroundFar.setScale(5, 5);
-    this.backgroundFar.fixedToCamera = true;
-    this.backgroundMid = game.add.tileSprite(
-        2500,
-        1500,
-        game.textures.get('background_mid').source[0].width,
-        game.textures.get('background_mid').source[0].height,
-        'background_mid'
-    );
-    this.backgroundMid.setOrigin(0, 0);
-    this.backgroundMid.setScale(5, 5);
-    this.backgroundMid.fixedToCamera = true;
-    this.backgroundFront = game.add.tileSprite(
-        2500,
-        1500,
-        game.textures.get('background_front').source[0].width,
-        game.textures.get('background_front').source[0].height,
-        'background_front'
-    );
-    this.backgroundFront.setOrigin(0, 0);
-    this.backgroundFront.setScale(5, 5);
-    this.backgroundFront.fixedToCamera = true;
-
-    console.log('fsdsfsdfdfsdf', game.textures.get('background_mid'))
-*/
 
     world = new World(game);
     input = new Input();
@@ -266,6 +205,7 @@ function resumeGameFromInput() {
     game.paused = false;
 }
 
+/*
 function spawnEnemies() {
     console.log('spawnEnemies');
     if (world.numEnemies > 0)
@@ -280,6 +220,7 @@ function spawnEnemies() {
 
     //audio.fly.play();
 }
+*/
 
 function startGame() {
     if (!game.paused)
@@ -290,6 +231,7 @@ function startGame() {
     // game.time.addEvent({ delay: 4000, repeat: -1, callback: spawnEnemies });
 
     setScore(0);
+    setAmmo(world.player.weapon.clip + '/' + world.player.weapon.ammo);
 
     resumeGameFromInput();
 }
@@ -325,12 +267,29 @@ function setScore(value) {
     ui.updateScoreText(value);
 }
 
+function setAmmo(clip, ammo) {
+    ui.updateAmmoText(clip, ammo);
+}
+
 function gameOver() {
     console.log("gameOver()");
 
     world.cleanup();
 
     pauseGameForInput();
+}
+
+function loadWeaponJSON(callback) {
+    var xobj = new XMLHttpRequest();
+    xobj.overrideMimeType("application/json");
+    xobj.open('GET', '../assets/weapons/weapon_list.json', true);
+    xobj.onreadystatechange = function () {
+        if (xobj.readyState == 4 && xobj.status == "200") {
+            // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+            callback(xobj.responseText);
+        }
+    };
+    xobj.send(null);
 }
 
 ///

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>CI328 Phaser Demo</title>
+
+    <!-- Load phaser -->
+    <script type="text/javascript" src="libs/phaser.min.js"></script>
+
+    <!-- Load user files
+    <script src="js/main.js"></script>
+    <script src="js/systems.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/entities.js"></script> -->
+
+    <!-- Remove borders around the game window -->
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="list-outer">
+        <ul class="list"></ul>
+
+
+    </div>
+
+    <!-- Define entry point -->
+    <script type="text/javascript">
+        var weapons;
+        var weaponKeys;
+        var listEl;
+        function init() {
+            loadWeaponJSON((response) => {
+                weapons = JSON.parse(response);
+                weaponKeys = Object.keys(weapons);
+                this.createList();
+            });
+        }
+
+        function createList() {
+            listEl = document.querySelector('.list');
+            var li, pName, pFireRate, pDamage, pClipSize, inputEquipped;
+
+            weaponKeys.forEach((weapon) => {
+                li = document.createElement('li');
+                pName = document.createElement('p');
+                pFireRate = document.createElement('p');
+                pDamage = document.createElement('p');
+                pClipSize = document.createElement('p');
+                pEquipped = document.createElement('p');
+                inputEquipped = document.createElement('input');
+
+                inputEquipped.setAttribute('type', 'radio');
+                inputEquipped.setAttribute('name', 'equipped');
+                if (weapons[weapon].equipped) {
+                    inputEquipped.setAttribute('checked', true);
+                }
+                inputEquipped.addEventListener('change', function (event) {
+                    updateWeaponList(event);
+                });
+
+
+                pName.textContent = 'Name: ' + weapons[weapon].sprite;
+                pFireRate.textContent = 'Fire rate: ' + weapons[weapon].fireRate;
+                pDamage.textContent = 'Damage: ' + weapons[weapon].damage;
+                pClipSize.textContent = 'Clip: ' + weapons[weapon].clipSize;
+                inputEquipped.value = weapons[weapon].sprite;
+
+                li.appendChild(pName);
+                li.appendChild(pFireRate);
+                li.appendChild(pDamage);
+                li.appendChild(pClipSize);
+                li.appendChild(inputEquipped);
+
+                listEl.appendChild(li);
+            });
+        }
+
+        function updateWeaponList(event) {
+            console.log(event.target.value);
+            weaponKeys.forEach((weapon) => {
+                if (weapons[weapon].equipped) {
+                    weapons[weapon].equipped = false;
+                }
+            })
+            weapons[event.target.value].equipped = true;
+            this.updateWeaponJSON((response) => {
+                weapons = JSON.parse(response);
+                console.log('inventory', weapons);
+            });
+        }
+
+        function loadWeaponJSON(callback) {
+            var xobj = new XMLHttpRequest();
+            xobj.overrideMimeType("application/json");
+            xobj.open('GET', '../assets/weapons/weapon_list.json', true);
+            xobj.onreadystatechange = function () {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+                    callback(xobj.responseText);
+                }
+            };
+            xobj.send(null);
+        }
+
+        function updateWeaponJSON(callback, object) {
+            var xobj = new XMLHttpRequest();
+            xobj.overrideMimeType("application/json");
+            xobj.open('POST', '../assets/weapons/weapon_list.json', true);
+            xobj.onreadystatechange = function () {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+                    callback(xobj.responseText);
+                }
+            };
+            xobj.send(object);
+        }
+        window.onload = init;
+    </script>
+
+</body>
+
+</html>

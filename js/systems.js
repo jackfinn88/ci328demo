@@ -69,13 +69,22 @@ class UI {
             font: '34px Arial',
             fill: '#fff'
         });
+        this.ammoText = game.add.text(10, game.cameras.main.height - 50, 'Ammo: 0/0', {
+            font: '34px Arial',
+            fill: '#fff'
+        });
 
         this.scoreText.setScrollFactor(0);
+        this.ammoText.setScrollFactor(0);
         this.startGameText.setScrollFactor(0);
     }
 
     updateScoreText(newScore) {
         this.scoreText.setText('Score: ' + newScore);
+    }
+
+    updateAmmoText(newAmmo) {
+        this.ammoText.setText('Ammo: ' + newAmmo);
     }
 
     showStartText() {

@@ -6,21 +6,13 @@ class Player {
         this.isFalling = false;
         this.fireRateTimer;
         this.isDead = false;
-        this.pistolWeapon = {
-            sprite: 'pistol',
-            velocity: 1000,
-            fireRate: 20,
-            barrelOffset: { x: 50, y: -20 },
-            damage: 20
-        }
-        this.rifleWeapon = {
-            sprite: 'rifle',
-            velocity: 1000,
-            fireRate: 10,
-            barrelOffset: { x: 50, y: -5 },
-            damage: 40
-        }
-        this.weapon = this.rifleWeapon;
+
+        const weapons = Object.keys(game.weapons);
+        weapons.forEach((weapon) => {
+            if (game.weapons[weapon].equipped) {
+                this.weapon = game.weapons[weapon];
+            }
+        })
 
         this.lastFired = this.weapon.fireRate;
 
@@ -39,22 +31,24 @@ class Player {
         const rifle = game.add.sprite(20, 26, this.weapon.sprite);
         rifle.setOrigin(0.5)
         rifle.name = this.weapon.sprite;
+        this.weapon.obj = rifle;
+        this.weapon.ammo = 60;
+        this.weapon.clip = this.weapon.clipSize;
 
         // add sprites to container
         this.playerContainer.add(this.sprite);
         this.playerContainer.add(rifle);
 
         game.anims.create({
-            key: 'rifle_move',
-            frames: game.anims.generateFrameNames('rifle', { prefix: 'walk', start: 1, end: 12, zeroPad: 2 }),
-            frameRate: 12,
-            repeat: -1
-        });
-        game.anims.create({
             key: 'walking',
             frames: game.anims.generateFrameNames('player', { prefix: 'walk', start: 2, end: 5, zeroPad: 2 }),
             frameRate: 10,
             repeat: -1
+        });
+        game.anims.create({
+            key: 'shotgun_reload',
+            frames: game.anims.generateFrameNames('shotgun', { prefix: 'reload', start: 1, end: 10, zeroPad: 2 }),
+            frameRate: 10,
         });
         // idle with only one frame, so repeat is not neaded
         game.anims.create({
@@ -129,31 +123,65 @@ class Player {
     }
 
     startShooting() {
-        // start looping
-        if (this.lastFired < this.weapon.fireRate) {
-            this.lastFired++;
-        } else {
-            this.lastFired = 0;
-            let spawnOffset = { x: this.weapon.barrelOffset.x, y: this.weapon.barrelOffset.y };
-            if (this.playerContainer.getByName(this.weapon.sprite).flipX) {
-                spawnOffset.x = -this.weapon.barrelOffset.x;
+        if (this.weapon.ammo > 0) {
+            // start looping
+            this.fireRateTimer = requestAnimationFrame(() => { this.startShooting() });
+            if (this.weapon.clip > 0) {
+                if (this.lastFired < this.weapon.fireRate) {
+                    this.lastFired++;
+                } else {
+                    this.lastFired = 0;
+                    let spawnOffset = { x: this.weapon.barrelOffset.x, y: this.weapon.barrelOffset.y };
+                    let recoilBounce;
+                    if (this.playerContainer.getByName(this.weapon.sprite).flipX) {
+                        spawnOffset.x = -this.weapon.barrelOffset.x;
+                        recoilBounce = -3;
+                    } else {
+                        spawnOffset.x = this.weapon.barrelOffset.x;
+                        recoilBounce = 3;
+                    }
+                    // show recoil
+                    if (!this.weapon.obj.anims.isPlaying) {
+                        if (this.weapon.recoilX) {
+                            world.player.playerContainer.list[1].x -= recoilBounce;
+                        } else {
+                            world.player.playerContainer.list[1].y -= Math.abs(recoilBounce); // vertical always bounces up
+                        }
+                        setTimeout(() => {
+                            if (this.weapon.recoilX) {
+                                world.player.playerContainer.list[1].x += recoilBounce;
+                            } else {
+                                world.player.playerContainer.list[1].y += Math.abs(recoilBounce);
+                            }
+                            if (this.weapon.reloadAnim && !this.weapon.obj.anims.isPlaying) {
+                                this.weapon.obj.anims.play(this.weapon.reloadAnim, false);
+                            }
+                        }, 50);
+                        // fire bullet
+                        world.spawnBullet(world.player.playerContainer.x + this.playerContainer.getByName(this.weapon.sprite).x + spawnOffset.x, world.player.playerContainer.y + this.playerContainer.getByName(this.weapon.sprite).y + spawnOffset.y);
+                        audio.shoot.play();
+                        this.weapon.clip--;
+                        this.weapon.ammo--;
+                        setAmmo(this.weapon.clip + '/' + this.weapon.ammo);
+                    }
+                }
             } else {
-                spawnOffset.x = this.weapon.barrelOffset.x;
+                setAmmo(this.weapon.clip + '/' + this.weapon.ammo + ' Reloading...');
+                setTimeout(() => {
+                    this.weapon.clip = this.weapon.ammo > this.weapon.clipSize ? this.weapon.clipSize : this.weapon.ammo > 0 ? this.weapon.ammo : 0;
+                    setAmmo(this.weapon.clip + '/' + this.weapon.ammo);
+                }, this.weapon.reloadDuration);
             }
-            world.player.playerContainer.list[1].y -= 3;
-            setTimeout(() => {
-                world.player.playerContainer.list[1].y += 3;
-            }, 50);
-            world.spawnBullet(world.player.playerContainer.x + this.playerContainer.getByName(this.weapon.sprite).x + spawnOffset.x, world.player.playerContainer.y + this.playerContainer.getByName(this.weapon.sprite).y + spawnOffset.y);
-            audio.shoot.play();
         }
-        this.fireRateTimer = requestAnimationFrame(() => { this.startShooting() });
     }
 
     stopShooting() {
         // stop looping
         cancelAnimationFrame(this.fireRateTimer);
-        this.lastFired = this.weapon.fireRate;
+        // finish out remaining cooldown from last shot
+        setTimeout(() => {
+            this.lastFired = this.fireRate;
+        }, this.fireRate - this.lastFired);
     }
 
     playerHit(player, spike) {
