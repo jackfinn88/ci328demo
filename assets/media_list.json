@@ -1,0 +1,142 @@
+{
+    "audio": [
+        {
+            "key": "intro",
+            "path": "assets/audio/start.mp3"
+        },
+        {
+            "key": "bg",
+            "path": "assets/audio/start.mp3"
+        },
+        {
+            "key": "explode",
+            "path": "assets/audio/explode.mp3"
+        },
+        {
+            "key": "shoot",
+            "path": "assets/audio/shoot.mp3"
+        }
+    ],
+    "image": [
+        {
+            "key": "bullet",
+            "path": "assets/weapons/bullet.png"
+        },
+        {
+            "key": "rifle",
+            "path": "assets/weapons/rifle.png"
+        },
+        {
+            "key": "eagle",
+            "path": "assets/weapons/eagle.png"
+        },
+        {
+            "key": "pistol",
+            "path": "assets/weapons/pistol.png"
+        },
+        {
+            "key": "smg",
+            "path": "assets/weapons/smg.png"
+        },
+        {
+            "key": "ak47",
+            "path": "assets/weapons/ak47.png"
+        },
+        {
+            "key": "machine_pistol",
+            "path": "assets/weapons/machine_pistol.png"
+        },
+        {
+            "key": "enemy1_rifle",
+            "path": "assets/weapons/enemies/enemy1_rifle.png"
+        },
+        {
+            "key": "enemy1_eagle",
+            "path": "assets/weapons/enemies/enemy1_eagle.png"
+        },
+        {
+            "key": "enemy1_pistol",
+            "path": "assets/weapons/enemies/enemy1_pistol.png"
+        },
+        {
+            "key": "enemy1_smg",
+            "path": "assets/weapons/enemies/enemy1_smg.png"
+        },
+        {
+            "key": "enemy1_ak47",
+            "path": "assets/weapons/enemies/enemy1_ak47.png"
+        },
+        {
+            "key": "enemy1_machine_pistol",
+            "path": "assets/weapons/enemies/enemy1_m_pistol.png"
+        },
+        {
+            "key": "enemy2_rifle",
+            "path": "assets/weapons/enemies/enemy2_rifle.png"
+        },
+        {
+            "key": "enemy2_eagle",
+            "path": "assets/weapons/enemies/enemy2_eagle.png"
+        },
+        {
+            "key": "enemy2_pistol",
+            "path": "assets/weapons/enemies/enemy2_pistol.png"
+        },
+        {
+            "key": "enemy2_smg",
+            "path": "assets/weapons/enemies/enemy2_smg.png"
+        },
+        {
+            "key": "enemy2_ak47",
+            "path": "assets/weapons/enemies/enemy2_ak47.png"
+        },
+        {
+            "key": "enemy2_machine_pistol",
+            "path": "assets/weapons/enemies/enemy2_m_pistol.png"
+        },
+        {
+            "key": "spike",
+            "path": "assets/spike.png"
+        },
+        {
+            "key": "ladder",
+            "path": "assets/ladder.png"
+        },
+        {
+            "key": "invisible_wall",
+            "path": "assets/invisible_wall.png"
+        }
+    ],
+    "spritesheet": [
+        {
+            "key": "tiles",
+            "path": "assets/industrial_tiles.png",
+            "config": {
+                "frameWidth": 70,
+                "frameHeight": 70
+            }
+        }
+    ],
+    "atlas": [
+        {
+            "key": "player",
+            "path": "assets/player.png",
+            "json": "assets/player.json"
+        },
+        {
+            "key": "enemy1",
+            "path": "assets/enemy1.png",
+            "json": "assets/enemy1.json"
+        },
+        {
+            "key": "enemy2",
+            "path": "assets/enemy2.png",
+            "json": "assets/enemy2.json"
+        },
+        {
+            "key": "shotgun",
+            "path": "assets/weapons/shotgun_sheet.png",
+            "json": "assets/weapons/shotgun.json"
+        }
+    ]
+}

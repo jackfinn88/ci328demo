@@ -1,6 +1,7 @@
 {
     "pistol": {
-        "sprite": "pistol",
+        "name": "pistol",
+        "displayName": "Pistol",
         "velocity": 1000,
         "fireRate": 20,
         "barrelOffset": {
@@ -9,12 +10,17 @@
         },
         "damage": 20,
         "clipSize": 15,
+        "currentAmmo": -1,
         "recoilX": false,
         "reloadDuration": 750,
-        "equipped": false
+        "unlocksAt": 0,
+        "purchased": true,
+        "price": 500,
+        "ammoPrice": 100
     },
     "eagle": {
-        "sprite": "eagle",
+        "name": "eagle",
+        "displayName": "Desert Eagle",
         "velocity": 1000,
         "fireRate": 25,
         "barrelOffset": {
@@ -23,12 +29,17 @@
         },
         "damage": 50,
         "clipSize": 7,
+        "currentAmmo": 0,
         "recoilX": true,
         "reloadDuration": 1000,
-        "equipped": false
+        "unlocksAt": 1,
+        "purchased": false,
+        "price": 500,
+        "ammoPrice": 100
     },
     "machine_pistol": {
-        "sprite": "m_pistol",
+        "name": "machine_pistol",
+        "displayName": "Machine Pistol",
         "velocity": 1000,
         "fireRate": 10,
         "barrelOffset": {
@@ -37,12 +48,17 @@
         },
         "damage": 30,
         "clipSize": 9,
+        "currentAmmo": 0,
         "recoilX": false,
         "reloadDuration": 700,
-        "equipped": false
+        "unlocksAt": 2,
+        "purchased": false,
+        "price": 500,
+        "ammoPrice": 100
     },
     "smg": {
-        "sprite": "smg",
+        "name": "smg",
+        "displayName": "SMG",
         "velocity": 1000,
         "fireRate": 10,
         "barrelOffset": {
@@ -51,12 +67,17 @@
         },
         "damage": 35,
         "clipSize": 25,
+        "currentAmmo": 0,
         "recoilX": false,
         "reloadDuration": 750,
-        "equipped": true
+        "unlocksAt": 3,
+        "purchased": false,
+        "price": 500,
+        "ammoPrice": 100
     },
     "rifle": {
-        "sprite": "rifle",
+        "name": "rifle",
+        "displayName": "Carbine",
         "velocity": 1000,
         "fireRate": 10,
         "barrelOffset": {
@@ -65,12 +86,17 @@
         },
         "damage": 40,
         "clipSize": 30,
+        "currentAmmo": 0,
         "recoilX": false,
         "reloadDuration": 850,
-        "equipped": false
+        "unlocksAt": 3,
+        "purchased": false,
+        "price": 500,
+        "ammoPrice": 100
     },
     "ak47": {
-        "sprite": "ak47",
+        "name": "ak47",
+        "displayName": "AK-47",
         "velocity": 1000,
         "fireRate": 10,
         "barrelOffset": {
@@ -79,23 +105,32 @@
         },
         "damage": 45,
         "clipSize": 35,
+        "currentAmmo": 0,
         "recoilX": true,
         "reloadDuration": 850,
-        "equipped": false
+        "unlocksAt": 3,
+        "purchased": false,
+        "price": 500,
+        "ammoPrice": 100
     },
     "shotgun": {
-        "sprite": "shotgun",
+        "name": "shotgun",
+        "displayName": "Shotgun",
         "velocity": 1000,
         "fireRate": 40,
         "barrelOffset": {
             "x": 40,
             "y": -5
         },
-        "damage": 80,
+        "damage": 100,
         "clipSize": 6,
+        "currentAmmo": 0,
         "reloadAnim": "shotgun_reload",
         "recoilX": true,
         "reloadDuration": 1250,
-        "equipped": false
+        "unlocksAt": 3,
+        "purchased": false,
+        "price": 500,
+        "ammoPrice": 100
     }
 }

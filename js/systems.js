@@ -25,7 +25,7 @@ class Input {
         if (downAction) {
             eventString = 'keydown_' + key;
             game.input.keyboard.on(eventString, function (event) {
-                if (this.enabled) {
+                if (this.enabled || key == 'P') {
                     downAction();
                 }
             }, this);
@@ -69,7 +69,12 @@ class UI {
             font: '34px Arial',
             fill: '#fff'
         });
-        this.ammoText = game.add.text(10, game.cameras.main.height - 50, 'Ammo: 0/0', {
+        this.ammoText = game.add.text(10, game.cameras.main.height - 100,
+            game.weapons[world.player.weapon.name].displayName +
+            ':\n' +
+            game.weapons[world.player.weapon.name].clipSize +
+            '/' +
+            game.weapons[world.player.weapon.name].currentAmmo, {
             font: '34px Arial',
             fill: '#fff'
         });
@@ -77,6 +82,8 @@ class UI {
         this.scoreText.setScrollFactor(0);
         this.ammoText.setScrollFactor(0);
         this.startGameText.setScrollFactor(0);
+
+        this.menu = document.querySelector('#pause-menu');
     }
 
     updateScoreText(newScore) {
@@ -84,7 +91,15 @@ class UI {
     }
 
     updateAmmoText(newAmmo) {
-        this.ammoText.setText('Ammo: ' + newAmmo);
+        this.ammoText.setText(game.weapons[world.player.weapon.name].displayName + ':\n' + newAmmo);
+    }
+
+    showPauseMenu() {
+        this.menu.style.display = 'block';
+    }
+
+    hidePauseMenu() {
+        this.menu.style.display = 'none';
     }
 
     showStartText() {

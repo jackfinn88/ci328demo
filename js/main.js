@@ -15,18 +15,34 @@ var cursors;
 var groundLayer, coinLayer;
 var text;
 var score = 0;
-var backgroundBg;
-var backgroundFar;
-var backgroundMid;
-var backgroundFront;
+
+var user;
+var weapons;
+var media;
 
 function init() {
-
     console.log("init()");
+    var storedWeapons = localStorage.getItem('weapons');
+    if (storedWeapons) {
+        weapons = JSON.parse(storedWeapons);
+        user = JSON.parse(localStorage.getItem('user'));
+        if (!user.equipped) {
+            user.equipped = 'pistol';
+        }
+    } else {
+        getJSON('assets/weapons/weapon_list.json', (response) => {
+            weapons = JSON.parse(response);
+            user = JSON.parse(localStorage.getItem('user'));
+            if (!user.equipped) {
+                user.equipped = 'pistol';
+            }
+            localStorage.setItem('weapons', JSON.stringify(weapons));
+        });
+    }
 
-    loadWeaponJSON((response) => {
-        weapons = JSON.parse(response);
-        console.log('main.js', weapons);
+    getJSON('assets/media_list.json', (response) => {
+        media = JSON.parse(response);
+        console.log(media);
     });
 
     main();
@@ -40,6 +56,7 @@ function main() {
         parent: 'my-game',
         width: 800,
         height: 600,
+        parent: 'game',
         physics: {
             default: 'arcade',
             arcade: {
@@ -69,37 +86,24 @@ function preload() {
 
     this.weapons = weapons;
 
-    this.load.image('bullet_img', 'assets/bullet.png');
-    this.load.audio('intro', 'assets/audio/start.mp3');
-    this.load.audio('bg', 'assets/audio/start.mp3');
-    this.load.audio('explode', 'assets/audio/explode.mp3');
-    this.load.audio('shoot', 'assets/audio/shoot.mp3');
-    ///
+    // load media
+    media["image"].forEach((image) => {
+        this.load.image(image.key, image.path);
+    });
+    media["audio"].forEach((audio) => {
+        this.load.audio(audio.key, audio.path);
+    });
+    media["spritesheet"].forEach((spritesheet) => {
+        this.load.spritesheet(spritesheet.key, spritesheet.path, spritesheet.config);
+    });
+    media["atlas"].forEach((atlas) => {
+        this.load.atlas(atlas.key, atlas.path, atlas.json);
+    });
 
+    var level = 'level02';
+    var levelPath = 'assets/' + level + '.json';
     // map made with Tiled in JSON format
-    /// this.load.tilemapTiledJSON('map', 'assets/map.json');
-    // tiles in spritesheet 
-    // this.load.spritesheet('tiles', 'assets/tiles.png', { frameWidth: 70, frameHeight: 70 });
-    // simple coin image
-    this.load.image('coin', 'assets/coinGold.png');
-    // player animations
-    this.load.atlas('player', 'assets/player.png', 'assets/player.json');
-
-    // weapon images
-    this.load.image('bullet', 'assets/weapons/bullet.png');
-    this.load.image('rifle', 'assets/weapons/rifle.png');
-    this.load.image('eagle', 'assets/weapons/eagle.png');
-    this.load.image('pistol', 'assets/weapons/pistol.png');
-    this.load.image('smg', 'assets/weapons/smg.png');
-    this.load.image('ak47', 'assets/weapons/ak47.png');
-    this.load.image('m_pistol', 'assets/weapons/machine_pistol.png');
-    this.load.atlas('shotgun', 'assets/weapons/shotgun.png', 'assets/weapons/shotgun.json');
-
-    // map made with Tiled in JSON format
-    this.load.tilemapTiledJSON('map', 'assets/level01.json');
-    // tiles in spritesheet 
-    this.load.spritesheet('tiles', 'assets/industrial_tiles.png', { frameWidth: 70, frameHeight: 70 });
-    this.load.image('spike', 'assets/spike.png');
+    this.load.tilemapTiledJSON('map', levelPath);
 }
 
 /**
@@ -132,18 +136,24 @@ function create() {
     ui = new UI();
     audio = new Audio();
 
-    input.add('A', Phaser.Input.Keyboard.KeyCodes.A, function () { world.player.left(); }, function () { world.player.idle(); });
-    input.add('D', Phaser.Input.Keyboard.KeyCodes.D, function () { world.player.right(); }, function () { world.player.idle(); });
-    input.add('W', Phaser.Input.Keyboard.KeyCodes.W, function () { world.player.up(); }, function () { world.player.idle(); });
+    // add input keys - { stringRef, KeyCode, keydownCallback, keyupCallback }
+    input.add('W', Phaser.Input.Keyboard.KeyCodes.W, function () { world.player.onUpKeydown(); }, function () { world.player.onUpKeyup(); });
+    input.add('A', Phaser.Input.Keyboard.KeyCodes.A, function () { world.player.onLeftKeydown(); }, function () { world.player.idle(); });
+    input.add('S', Phaser.Input.Keyboard.KeyCodes.S, function () { world.player.onDownKeydown(); }, function () { world.player.onDownKeyup(); });
+    input.add('D', Phaser.Input.Keyboard.KeyCodes.D, function () { world.player.onRightKeydown(); }, function () { world.player.idle(); });
     input.add('SPACE', Phaser.Input.Keyboard.KeyCodes.SPACE, function () { world.player.startShooting(); }, function () { world.player.stopShooting(); });
+    input.add('P', Phaser.Input.Keyboard.KeyCodes.P, function () { pauseGame(); }, undefined);
+    input.add('R', Phaser.Input.Keyboard.KeyCodes.R, function () { world.player.reloadWeapon(); }, undefined);
 
     // set the boundaries of our game world
     this.physics.world.bounds.width = groundLayer.width;
     this.physics.world.bounds.height = groundLayer.height;
+
     // player will collide with the level tiles 
     this.physics.add.collider(groundLayer, world.player.playerContainer);
+
     // will be called    
-    this.physics.add.overlap(world.player.sprite, coinLayer);
+    // this.physics.add.overlap(world.player.sprite, coinLayer);
 
     // set bounds so the camera won't go outside the game world
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
@@ -153,38 +163,26 @@ function create() {
     // set background color, so the sky is not black    
     this.cameras.main.setBackgroundColor('#ccccff');
 
+    initializeAnimations();
+    initializeMapObjects();
+
     /**/
     pauseGameForInput();
 
-    game.input.on('pointerdown', startGame);
+    game.input.once('pointerdown', startGame);
     ///
+}
 
-    this.spikes = this.physics.add.group({
-        allowGravity: false,
-        immovable: true
-    });
+function pauseGame() {
+    game.paused = !game.paused;
 
-    // Let's get the spike objects, these are NOT sprites
-    const spikeObjects = map.getObjectLayer('Spikes')['objects'];
-
-    // Now we create spikes in our sprite group for each object in our map
-    spikeObjects.forEach(spikeObject => {
-        // Add new spikes to our sprite group, change the start y position to meet the platform
-        const spike = this.spikes.create(spikeObject.x, spikeObject.y - spikeObject.height, 'spike').setOrigin(0, 0);
-
-        spike.body.setSize(spike.width * 0.8, spike.height * 0.4).setOffset(spike.width * 0.6, spike.height * 1.1);
-    });
-
-    // Let's get the spike objects, these are NOT sprites
-    const enemyLocations = map.getObjectLayer('Enemies')['objects'];
-
-    // Now we create spikes in our sprite group for each object in our map
-    enemyLocations.forEach(location => {
-        // Add new spikes to our sprite group, change the start y position to meet the platform
-        world.spawnEnemy(location.x + location.width * 0.5, location.y - location.height);
-    });
-
-    this.physics.add.collider(world.player.playerContainer, this.spikes, world.player.playerHit, null, this);
+    if (game.paused) {
+        input.disable();
+        ui.showPauseMenu();
+    } else {
+        input.enable();
+        ui.hidePauseMenu();
+    }
 }
 
 function pauseGameForInput() {
@@ -230,14 +228,13 @@ function startGame() {
 
     // game.time.addEvent({ delay: 4000, repeat: -1, callback: spawnEnemies });
 
-    setScore(0);
-    setAmmo(world.player.weapon.clip + '/' + world.player.weapon.ammo);
+    setScoreText(0);
+    setAmmoText(world.player.weapon.clip + '/' + (world.player.weapon.ammo < 0 ? '--' : world.player.weapon.ammo));
 
     resumeGameFromInput();
 }
 
-function update(t) {
-    time = t;
+function update() {
     // input.update();
 
     world.update();
@@ -252,23 +249,77 @@ function onCollisionPlayerEnemy(playerSprite, enemySprite) {
 function onCollisionBulletEnemy(enemy, bullet) {
     bullet.destroy();
 
-    enemy.health -= bullet.damage;
-    if (enemy.health <= 0) {
-        enemy.destroy();
-        audio.explode.play();
+    // partially reduce damage based on distance from player to enemy
+    var dist = distance(world.player.playerContainer, enemy);
+    var reduction = dist > 500 ? 0.7 : dist > 300 ? 0.9 : 1;
+    var damage = bullet.damage * reduction;
 
-        world.numEnemies--;
-        setScore(game.score + 20);
+    // kill or reduce enemy health
+    if (!enemy.isDead) {
+        if ((enemy.health - damage) <= 0) {
+            enemy.controls[0].onDeath();
+        } else {
+            enemy.health -= damage;
+            console.log({ 'enemy_hp': enemy.health });
+        }
     }
 }
 
-function setScore(value) {
+function onCollisionBulletPlayer(enemy, bullet) {
+    console.log('player hit');
+    /*
+    bullet.destroy();
+
+    // partially reduce damage based on distance from player to enemy
+    var dist = distance(world.player.playerContainer, enemy);
+    var damageReduction = dist > 500 ? 0.7 : dist > 300 ? 0.9 : 1;
+    var damage = bullet.damage * damageReduction;
+    console.log({ 'distance': dist, 'reduction': damageReduction, 'damage': damage });
+
+    // kill or reduce enemy health
+    if (!enemy.isDead) {
+        if ((enemy.health - damage) <= 0) {
+            enemy.controls[0].onDeath();
+        } else {
+            enemy.health -= damage;
+            console.log({ 'enemy_hp': enemy.health });
+        }
+    }*/
+}
+
+function onCollisionPlayerLadder() {
+    // set flag to only execute once on initial collision
+    if (!world.player.playerContainer.canClimb) {
+        world.player.playerContainer.canClimb = true;
+
+        // periodically check player is still overlapping ladder
+        checkOverlap(world.player.playerContainer, game.ladders, function () {
+            // enable gravity if not
+            world.player.playerContainer.body.setAllowGravity(true);
+            world.player.playerContainer.canClimb = false;
+        }, 100);
+    }
+}
+
+// recursive function to check overlap between 2 objects at intervals - executes callback on separation
+function checkOverlap(object1, object2, callback, interval) {
+    setTimeout(() => {
+        var overlapping = game.physics.overlap(object1, object2);
+        if (!overlapping) {
+            callback();
+        } else {
+            checkOverlap(object1, object2, callback, interval);
+        }
+    }, interval);
+}
+
+function setScoreText(value) {
     game.score = value;
     ui.updateScoreText(value);
 }
 
-function setAmmo(clip, ammo) {
-    ui.updateAmmoText(clip, ammo);
+function setAmmoText(value) {
+    ui.updateAmmoText(value);
 }
 
 function gameOver() {
@@ -279,17 +330,152 @@ function gameOver() {
     pauseGameForInput();
 }
 
-function loadWeaponJSON(callback) {
-    var xobj = new XMLHttpRequest();
-    xobj.overrideMimeType("application/json");
-    xobj.open('GET', '../assets/weapons/weapon_list.json', true);
-    xobj.onreadystatechange = function () {
-        if (xobj.readyState == 4 && xobj.status == "200") {
+function quitGame() {
+    window.location.href = 'index.html';
+}
+
+function distance(p, q) {
+    var dx = p.x - q.x;
+    var dy = p.y - q.y;
+    var dist = Math.sqrt(dx * dx + dy * dy);
+    return dist;
+}
+
+function getJSON(path, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.overrideMimeType("application/json");
+    xhr.open('GET', path, true);
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4 && xhr.status == "200") {
             // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
-            callback(xobj.responseText);
+            callback(xhr.responseText);
         }
     };
-    xobj.send(null);
+    xhr.send(null);
+}
+
+function initializeMapObjects() {
+    game.ladders = game.physics.add.group({
+        allowGravity: false,
+        immovable: true
+    });
+    game.enemyWalls = game.physics.add.group({
+        allowGravity: false,
+        immovable: true
+    });
+    game.spikes = game.physics.add.group({
+        allowGravity: false,
+        immovable: true
+    });
+
+    // add ladders
+    var ladderObjects = map.getObjectLayer('Ladders')['objects'];
+    ladderObjects.forEach(ladderObject => {
+        var ladder = game.ladders.create(ladderObject.x, ladderObject.y - ladderObject.height, 'ladder').setOrigin(0, 0);
+        ladder.body.setSize(ladder.width, ladder.height).setOffset(ladder.width * 0.5, ladder.height * 0.5);
+    });
+
+    // add walls to bounce enemies
+    var enemyWalls = map.getObjectLayer('InvisibleWalls')['objects'];
+    enemyWalls.forEach(enemyWall => {
+        var wall = game.enemyWalls.create(enemyWall.x, enemyWall.y - enemyWall.height, 'invisible_wall', null, false).setOrigin(0, 0);
+        wall.body.setSize(wall.width, wall.height).setOffset(wall.width * 0.5, wall.height * 0.5);
+    });
+
+    // add spikes
+    var spikeObjects = map.getObjectLayer('Spikes')['objects'];
+    spikeObjects.forEach(spikeObject => {
+        var spike = game.spikes.create(spikeObject.x, spikeObject.y - spikeObject.height, 'spike').setOrigin(0, 0);
+        spike.body.setSize(spike.width * 0.8, spike.height * 0.4).setOffset(spike.width * 0.6, spike.height * 1.1);
+    });
+
+    // spawn enemies at locations
+    var enemyLocations = map.getObjectLayer('Enemies')['objects'];
+    enemyLocations.forEach(location => {
+        world.spawnEnemy(location.x + location.width * 0.5, location.y - location.height);
+    });
+
+    // colliders
+    game.physics.add.collider(world.player.playerContainer, game.spikes, world.player.playerHit, null, this);
+    game.physics.add.collider(world.player.playerContainer, game.ladders, onCollisionPlayerLadder, null, this).overlapOnly = true;
+    game.physics.add.collider(world.enemyFactory.group, game.enemyWalls, world.enemyFactory.entityHitBounds, null, this);
+}
+
+function initializeAnimations() {
+    // player
+    game.anims.create({
+        key: 'walking',
+        frames: game.anims.generateFrameNames('player', { prefix: 'walk', start: 2, end: 5, zeroPad: 2 }),
+        frameRate: 10,
+        repeat: -1
+    });
+    game.anims.create({
+        key: 'shotgun_reload',
+        frames: game.anims.generateFrameNames('shotgun', { prefix: 'reload', start: 1, end: 10, zeroPad: 2 }),
+        frameRate: 10,
+    });
+    game.anims.create({
+        key: 'idle',
+        frames: [{ key: 'player', frame: 'idle' }],
+    });
+    game.anims.create({
+        key: 'jump',
+        frames: [{ key: 'player', frame: 'jump' }],
+    });
+    game.anims.create({
+        key: 'death',
+        frames: [{ key: 'player', frame: 'death' }],
+    });
+
+    // enemy1
+    game.anims.create({
+        key: 'enemy1_walking',
+        frames: game.anims.generateFrameNames('enemy1', { prefix: 'walk', start: 2, end: 5, zeroPad: 2 }),
+        frameRate: 10,
+        repeat: -1
+    });
+    game.anims.create({
+        key: 'enemy1_shotgun_reload',
+        frames: game.anims.generateFrameNames('enemy1' + '_shotgun', { prefix: 'reload', start: 1, end: 10, zeroPad: 2 }),
+        frameRate: 10,
+    });
+    game.anims.create({
+        key: 'enemy1_idle',
+        frames: [{ key: 'enemy1', frame: 'idle' }],
+    });
+    game.anims.create({
+        key: 'enemy1_jump',
+        frames: [{ key: 'enemy1', frame: 'jump' }],
+    });
+    game.anims.create({
+        key: 'enemy1_death',
+        frames: [{ key: 'enemy1', frame: 'death' }],
+    });
+
+    // enemy2
+    game.anims.create({
+        key: 'enemy2_walking',
+        frames: game.anims.generateFrameNames('enemy2', { prefix: 'walk', start: 2, end: 5, zeroPad: 2 }),
+        frameRate: 10,
+        repeat: -1
+    });
+    game.anims.create({
+        key: 'enemy2_shotgun_reload',
+        frames: game.anims.generateFrameNames('enemy2' + '_shotgun', { prefix: 'reload', start: 1, end: 10, zeroPad: 2 }),
+        frameRate: 10,
+    });
+    game.anims.create({
+        key: 'enemy2_idle',
+        frames: [{ key: 'enemy2', frame: 'idle' }],
+    });
+    game.anims.create({
+        key: 'enemy2_jump',
+        frames: [{ key: 'enemy2', frame: 'jump' }],
+    });
+    game.anims.create({
+        key: 'enemy2_death',
+        frames: [{ key: 'enemy2', frame: 'death' }],
+    });
 }
 
 ///
@@ -298,7 +484,7 @@ function loadWeaponJSON(callback) {
 function collectCoin(sprite, tile) {
     console.log("collectCoin");
     coinLayer.removeTileAt(tile.x, tile.y); // remove the tile/coin
-    setScore(game.score + 20);
+    setScoreText(game.score + 20);
 
     return false;
 }

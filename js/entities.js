@@ -8,67 +8,19 @@ class Control {
 class EntityFactory {
     constructor(spriteName) {
         console.log('entity constructor')
-        const group = game.physics.add.group({
+        var group = game.physics.add.group({
             defaultKey: spriteName
         });
 
         this.group = group;
         this.container;
-        /*if (this.group.defaultKey === 'bullet_img') {
-            this.group.createMultiple({ 'key': this.group.defaultKey, 'repeat': 29 });
-
-            this.group.children.each(function (bullet) {
-                console.log(bullet)
-                // bullet.anchor.x = 0.5;
-                // bullet.anchor.x = 1;
-                bullet.allowGravity = true;// gravity.y = 0;
-                console.log(bullet.body)
-                // bullet.body.gravity.x = 0;
-                bullet.setOrigin(0.5, 0.5);
-                const velocity = 650;
-                // bullet.setVelocity(game.player.sprite.flipX ? -velocity : velocity, 0);
-                bullet.outOfBoundsKill = true;
-                bullet.checkWorldBounds = true;
-            }, this);
-        }*/
-        /*console.log('oop', Phaser.Weapon.KILL_WORLD_BOUNDS)
-
-        this.weapon = game.add.weapon(30, 'bullet_img');
-        weapon.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
-
-        //  Because our bullet is drawn facing up, we need to offset its rotation:
-        weapon.bulletAngleOffset = 90;
-
-        //  The speed at which the bullet is fired
-        weapon.bulletSpeed = 400;
-
-        //  Speed-up the rate of fire, allowing them to shoot 1 bullet every 60ms
-        weapon.fireRate = 60;*/
     }
 
-    spawnAsBullet(x, y) {
-        /*if (!this.nextBulletTime) {
-            this.nextBulletTime = 0;
-        }
-
-        //  To avoid them being allowed to fire too fast we set a time limit
-        if (game.time.now > this.nextBulletTime) {
-
-            const sprite = this.group.create(x - 1, y - 2);
-
-            this.setUpEntity(sprite);
-            sprite.body.allowGravity = false;// gravity.y = 0;
-            // sprite.body.gravity.x = 0;
-            sprite.setOrigin(0.5, 0.5);
-            const velocity = 650;
-            sprite.setVelocity(world.player.sprite.flipX ? -velocity : velocity, 0);
-            this.nextBulletTime = game.time.now + 200;
-        }*/
-
+    spawnAsBullet(x, y, velocity) {
         console.log('spawn as bullet');
 
         //  Grab the first bullet we can from the pool
-        const bullet = this.group.get(x, y);
+        var bullet = this.group.get(x, y);
         // console.log(this.group)
         if (bullet) {
             bullet.damage = world.player.weapon.damage;
@@ -76,26 +28,35 @@ class EntityFactory {
             bullet.outOfBoundsKill = true;
             bullet.checkWorldBounds = true;
             bullet.setScale(0.5);
-            bullet.body.setVelocityX(world.player.sprite.flipX ? -world.player.weapon.velocity : world.player.weapon.velocity, 0);
+            // bullet.body.setVelocityX(world.player.sprite.flipX ? -world.player.weapon.velocity : world.player.weapon.velocity, 0);
+            bullet.body.setVelocityX(velocity ? -1000 : 1000, 0);
         }
 
     }
 
     spawnAsEnemy(x, y, type) {
-        const container = game.add.container(x, y);
-        container.setSize(80, 110);
+        // decide which enemy to spawn
+        var randomInt = (Math.random() > 0.5) ? 1 : 2;
+        var enemyType = this.group.defaultKey + randomInt;
+        console.log(enemyType);
+
+        var container = game.add.container(x, y);
+        container.name = enemyType;
+        container.setSize(60, 110);
         game.physics.world.enable(container);
         container.body.setCollideWorldBounds(true);
 
         this.setUpEntity(container);
 
         // create the enemy sprite
-        const sprite = game.add.sprite(0, 0, this.group.defaultKey);
-        sprite.name = this.group.defaultKey;
+        var sprite = game.add.sprite(0, 0, enemyType);
+        sprite.name = 'enemy';
+
+        var wpn = 'smg';
         // add enemy weapon
-        const weapon = type == 1 ? 'rifle' : type == 2 ? 'rifle' : 'rifle';
-        const rifle = game.add.sprite(20, 26, weapon);
-        rifle.name = weapon;
+        var weapon = enemyType + '_' + wpn;
+        var rifle = game.add.sprite(10, 20, weapon);
+        rifle.name = 'weapon';
         // set origin top-left
         rifle.originX = 0;
         rifle.originY = 0;
@@ -105,7 +66,7 @@ class EntityFactory {
         container.add(rifle);
 
         // add enemy control
-        container.addControl(new EnemyControl());
+        container.addControl(new EnemyControl(container));
 
         // add collision with ground layer
         game.physics.add.collider(groundLayer, container);
@@ -123,13 +84,16 @@ class EntityFactory {
         this.group.add(container);
     }
 
+    entityHitBounds(entity, bound) {
+        if (!entity.controls[0].isTurning) {
+            entity.controls[0].hitBounds();
+        }
+    }
+
     setUpEntity(entity) {
         entity.controls = [];
         entity.addControl = (control) => { entity.controls.push(control); }
         entity.updateControls = () => { entity.controls.forEach(control => control.onUpdate(entity)); }
-        /*sprite.controls = [];
-        sprite.addControl = (control) => { sprite.controls.push(control); }
-        sprite.updateControls = () => { sprite.controls.forEach(control => control.onUpdate(sprite)); }*/
     }
 
     updateAllExists() {
@@ -148,20 +112,148 @@ class EntityFactory {
 }
 
 class EnemyControl extends Control {
-    onUpdate(container) {
-        // container.x += 1;
-        /*if (sprite.x + sprite.width + sprite.width >= phaser.config.width) {
-            sprite.setVelocityX(-Phaser.Math.Between(35, 55));
-        }
+    constructor(enemy) {
+        super();
+        this.container = enemy;
+        this.test = Math.round(Math.random()) > 0.5 ? 1 : 0;
+        this.canShoot = true;
+        this.shootInterval;
+        this.isMovingRight = false;
+        this.isTurning = false;
+    }
 
-        if (sprite.x <= 0) {
-            sprite.setVelocityX(Phaser.Math.Between(35, 55));
-        }
+    onUpdate() {
+        if (!this.container.isDead) {
+            if (!this.isTurning) {
+                if (this.isMovingRight) {
+                    this.right();
+                } else {
+                    this.left();
+                }
+            }
+            // check against walls and reverse direction if necessary
+            if (this.container.body.touching.right || this.container.body.blocked.right) {
+                this.container.body.velocity.x = -50; // turn left
+            }
+            else if (this.container.body.touching.left || this.container.body.blocked.left) {
+                this.container.body.velocity.x = 50; // turn right
+            }
 
-        if (sprite.y > phaser.config.height + 40) {
-            sprite.destroy();
+            if (Math.abs(world.player.playerContainer.x - this.container.x) < 200 && Math.abs(world.player.playerContainer.y - this.container.y) < 200) {
+                // shoot player
+                if (world.player.playerContainer.x < this.container.x) {
+                    this.left();
+                } else {
+                    this.right();
+                }
+
+                this.idle();
+
+                if (this.canShoot) {
+                    world.spawnEnemyBullet(this.container.x + this.container.getByName('weapon').x, this.container.y + this.container.getByName('weapon').y, this.container.getByName('enemy').flipX ? true : false);
+                    this.canShoot = false;
+                    this.shootInterval = setTimeout(() => {
+                        this.canShoot = true;
+                    }, 800);
+                }
+                /*let spawnOffset = { x: this.weapon.barrelOffset.x, y: this.weapon.barrelOffset.y };
+                if (this.container.getByName('weapon').flipX) {
+                    spawnOffset.x = -this.weapon.barrelOffset.x;
+                    recoilBounce = -recoilBounce;
+                } else {
+                    spawnOffset.x = this.weapon.barrelOffset.x;
+                }*/
+                // world.spawnBullet(this.container.x + this.container.getByName('weapon').x + spawnOffset.x, this.container.y + this.container.getByName('weapon').y + spawnOffset.y, this.container.getByName('enemy').flipX ? true : false);
+                // world.spawnEnemyBullet(this.container.x + this.container.getByName('weapon').x, this.container.y + this.container.getByName('weapon').y, this.container.getByName('enemy').flipX ? true : false);
+            }
+
+        }
+    }
+
+    hitBounds() {
+        this.isTurning = true;
+        this.container.body.setVelocity(0, 0);
+        console.log(this.container);
+        if (this.isMovingRight) {
+            console.log('moving right, go left');
+            this.left();
+        } else {
+            console.log('moving left, go right');
+            this.right();
+        }
+        setTimeout(() => {
+            this.isTurning = false;
+        }, 500);
+    }
+
+    onDeath() {
+        this.container.isDead = true;
+        this.container.getByName('enemy').anims.play(this.container.name + '_death', true);
+        this.container.body.setVelocity(0, 0);
+
+        this.container.setAlpha(0);
+        game.tweens.add({
+            targets: this.container,
+            alpha: 1,
+            duration: 100,
+            ease: 'Linear',
+            repeat: 5,
+        });
+        this.container.list[1].y += 10;
+
+        setTimeout(() => {
+            this.container.destroy();
+            audio.explode.play();
+
             world.numEnemies--;
-        }*/
+            setScoreText(game.score + 20);
+            console.log('kill');
+        }, 800);
+    }
+
+    left() {
+        this.container.body.setVelocityX(-50);
+
+        // play left walk animation
+        if (this.container.body.onFloor()) {
+            // this.container.list[0].anims.play(this.container.list[0].name + '_walking', true);
+            this.container.getByName('enemy').anims.play(this.container.name + '_walking', true);
+        }
+
+        // adjust weapon position
+        this.container.getByName('weapon').x = -16;
+
+        // flip the sprite to the left
+        this.container.getByName('enemy').flipX = true;
+        this.container.getByName('weapon').flipX = true;
+        this.isMovingRight = false;
+    }
+
+    right() {
+        this.container.body.setVelocityX(50);
+
+        // play left walk animation
+        if (this.container.body.onFloor()) {
+            this.container.getByName('enemy').anims.play(this.container.name + '_walking', true);
+        }
+
+        // adjust weapon position
+        this.container.getByName('weapon').x = 16;
+
+        // flip the sprite to the left
+        this.container.getByName('enemy').flipX = false;
+        this.container.getByName('weapon').flipX = false;
+        this.isMovingRight = true;
+    }
+
+    idle() {
+        // if not and player is down then stop moving
+        if (this.container.body.onFloor()) {
+            // idle frame
+            this.container.getByName('enemy').anims.play(this.container.name + '_idle', true);
+
+            this.container.body.setVelocityX(0);
+        }
     }
 }
 
@@ -174,7 +266,10 @@ class World {
         this.player.onDeath(gameOver);
 
         this.bulletFactory = new EntityFactory('bullet');
-        this.enemyFactory = new EntityFactory('player');
+        this.enemyFactory = new EntityFactory('enemy');
+        this.enemyBulletFactory = new EntityFactory('bullet');
+
+        game.physics.add.overlap(this.enemyBulletFactory.group, this.player.playerContainer, onCollisionBulletPlayer, null, this);
 
         this.numEnemies = 0;
     }
@@ -184,8 +279,12 @@ class World {
         this.numEnemies++;
     }
 
-    spawnBullet(x, y) {
-        this.bulletFactory.spawnAsBullet(x, y);
+    spawnBullet(x, y, velocity) {
+        this.bulletFactory.spawnAsBullet(x, y, velocity);
+    }
+
+    spawnEnemyBullet(x, y, velocity) {
+        // this.enemyBulletFactory.spawnAsBullet(x, y, velocity);
     }
 
     update() {
@@ -199,16 +298,6 @@ class World {
 
         this.player.update();
         this.enemyFactory.updateAllExists();
-
-        const playerPosition = (world.player.playerContainer.x / game.physics.world.bounds.width) * 5000;
-        // game.backgroundBg.x = -((playerPosition * 1.1) + world.player.playerContainer.x);
-        // game.backgroundFar.x = -((playerPosition * 1.4) + world.player.playerContainer.x);
-        // game.backgroundMid.x = -((playerPosition * 1.6) + world.player.playerContainer.x);
-        // game.backgroundFront.x = -((playerPosition * 2) + world.player.playerContainer.x);
-        /*game.backgroundBg.x = world.player.playerContainer.x + game.textures.get('background_bg').source[0].width * 1.1;
-        game.backgroundFar.x = world.player.playerContainer.x + game.textures.get('background_back').source[0].width * 1.4;
-        game.backgroundMid.x = world.player.playerContainer.x + game.textures.get('background_mid').source[0].width * 1.6;
-        game.backgroundFront.x = world.player.playerContainer.x + game.textures.get('background_front').source[0].width * 2;;*/
     }
 
     cleanup() {

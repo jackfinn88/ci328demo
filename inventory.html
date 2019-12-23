@@ -16,70 +16,424 @@
 
     <!-- Remove borders around the game window -->
     <style type="text/css">
-        body {
+        #grid-wrapper {
+            width: 800px;
+            height: 600px;
+            margin: auto;
+            border: 1px solid red;
+            overflow: hidden;
+        }
+
+        .image {
+            grid-area: image;
+        }
+
+        .info {
+            grid-area: info;
+            height: 50px;
+            font-size: 10px;
+        }
+
+        .info p {
+            text-align: left;
             margin: 0;
+        }
+
+        .action {
+            grid-area: action;
+            height: 50px;
+        }
+
+        .column1 {
+            grid-area: auto 1;
+        }
+
+        .column2 {
+            grid-area: auto 2;
+        }
+
+        .column3 {
+            grid-area: auto 3;
+        }
+
+        #grid-container {
+            display: grid;
+            grid-auto-columns: 3fr;
+            grid-auto-flow: row;
+            grid-template-rows: 187px 187px 187px;
+            grid-template-areas:
+                'col1 col2 col3'
+                'col1 col2 col3'
+                'col1 menu menu';
+            grid-gap: 10px;
+            background-color: #2196F3;
+            padding: 10px;
+
+        }
+
+        #grid-container>div {
+            background-color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            padding: 5px 5px;
+            font-size: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-auto-columns: 1fr;
+            grid-auto-rows: 2fr;
+            grid-auto-flow: column;
+            grid-template-areas:
+                'image image'
+                'info action';
+            grid-gap: 10px;
+            background-color: #2196F3;
+            padding: 10px;
+        }
+
+        .grid>div {
+            height: calc(100% - 10px);
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px 5px;
+        }
+
+        .action button {
+            font-size: 10px;
+            width: 80%;
+        }
+
+        #resources p {
+            display: inline;
+            margin-right: 10px;
+        }
+
+        .progress-outer {
+            width: 80%;
+            height: 10px;
+            margin: 3px;
+            padding: 3px;
+            border: 1px solid black;
+        }
+
+        .progress-outer div {
+            height: 100%;
+            background-color: black;
+        }
+
+        .menu {
+            grid-area: menu;
         }
     </style>
 </head>
 
 <body>
-
-    <div class="list-outer">
-        <ul class="list"></ul>
-
-
+    <div id="resources">
+        <div>
+            <p>Level: </p>
+            <p id="level"></p><input type="text"><button onClick="updateLevel(event)">updateLevel</button>
+        </div>
+        <div>
+            <p>Cash: </p>
+            <p id="money"></p><input type="text"><button onClick="updateMoney(event)">updateCash</button>
+        </div>
     </div>
 
-    <!-- Define entry point -->
+    <div id="grid-wrapper">
+        <div id="grid-container">
+            <div class="menu"><a href="index.html">Home</a></div>
+        </div>
+    </div>
+
+    <!-- Load weapon list -->
     <script type="text/javascript">
         var weapons;
         var weaponKeys;
-        var listEl;
+        var gridEl, levelEl, moneyEl;
+        var equipped;
+        var user;
+        var inputGroup = [];
+        var purchaseWeaponGroup = [];
+        var purchaseAmmoGroup = [];
+
         function init() {
-            loadWeaponJSON((response) => {
-                weapons = JSON.parse(response);
+            console.log('init');
+            var storedWeapons = localStorage.getItem('weapons');
+            if (storedWeapons) {
+                weapons = JSON.parse(storedWeapons);
                 weaponKeys = Object.keys(weapons);
+                user = JSON.parse(localStorage.getItem('user'));
+                if (!user.equipped) {
+                    user.equipped = 'pistol';
+                }
                 this.createList();
+                this.loadResources();
+                console.log('weapons:', weapons);
+                weaponKeys.forEach((weapon) => {
+                    if (weapons[weapon].purchased) {
+                        console.log('purchased:', weapon);
+                    }
+                })
+            } else {
+                loadWeaponJSON((response) => {
+                    weapons = JSON.parse(response);
+                    weaponKeys = Object.keys(weapons);
+                    user = JSON.parse(localStorage.getItem('user'));
+                    if (!user.equipped) {
+                        user.equipped = 'pistol';
+                    }
+                    localStorage.setItem('weapons', JSON.stringify(weapons))
+                    this.createList();
+                    this.loadResources();
+                    console.log("loadWeaponJSON", weapons, weaponKeys);
+                });
+            }
+
+        }
+
+        function updateLevel(event) {
+            var level = parseInt(event.target.previousSibling.value, 10);
+            user["player_level"] = level.toString();
+            levelEl.textContent = user["player_level"];
+            event.target.previousSibling.value = '';
+
+            purchaseWeaponGroup.forEach((button, idx) => {
+                if (!weapons[weaponKeys[idx]].purchased) {
+                    if (user["player_level"] >= parseInt(weapons[weaponKeys[idx]].unlocksAt, 10) && user["money"] >= weapons[weaponKeys[idx]].price) {
+                        button.removeAttribute('disabled');
+                    }
+                }
             });
+
+            localStorage.setItem('user', JSON.stringify(user));
+        }
+
+        function updateMoney(event) {
+            var money = parseInt(event.target.previousSibling.value, 10);
+            user["money"] = money.toString();
+            moneyEl.textContent = user["money"];
+            event.target.previousSibling.value = '';
+
+            purchaseWeaponGroup.forEach((button, idx) => {
+                if (!weapons[weaponKeys[idx]].purchased) {
+                    if (user["player_level"] >= parseInt(weapons[weaponKeys[idx]].unlocksAt, 10) && user["money"] >= weapons[weaponKeys[idx]].price) {
+                        button.removeAttribute('disabled');
+                    }
+                }
+            });
+            purchaseAmmoGroup.forEach((button, idx) => {
+                if (weapons[weaponKeys[idx]].purchased) {
+                    if (user["money"] >= weapons[weaponKeys[idx]].ammoPrice) {
+                        button.removeAttribute('disabled');
+                    }
+                }
+            });
+
+            localStorage.setItem('user', JSON.stringify(user));
+        }
+
+        function loadResources() {
+            levelEl = document.querySelector('#level');
+            moneyEl = document.querySelector('#money');
+            console.log(user);
+            levelEl.textContent = user["player_level"];
+            moneyEl.textContent = user["money"];
         }
 
         function createList() {
-            listEl = document.querySelector('.list');
-            var li, pName, pFireRate, pDamage, pClipSize, inputEquipped;
+            gridEl = document.querySelector('#grid-container');
 
-            weaponKeys.forEach((weapon) => {
-                li = document.createElement('li');
+            var baseHref = 'assets/weapons/display/';
+            var divGrid, divImage, divInfo, divAction;
+            var div, pName, pFireRate, pDamage, pClipSize, inputEquipped, labelEquipped, buttonWeapon, pAmmo, buttonAmmo;
+            var divFireRateOuter, divFireRateInner, divDamageOuter, divDamageInner;
+
+            weaponKeys.forEach((weapon, idx) => {
+                divGrid = document.createElement('div');
+                divImage = document.createElement('div');
+                divInfo = document.createElement('div');
+                divAction = document.createElement('div');
+
+                image = document.createElement('img');
+                href = baseHref + weapon + '.png';
+                image.setAttribute('src', href);
+                divImage.appendChild(image)
+
+                divGrid.setAttribute('class', 'grid');
+                if (idx == 2 || idx == 5 || idx == 8) {
+                    console.log(idx, 'multiple of 3');
+                    // divGrid.style.setProperty('grid-area', 'col3');
+                    divGrid.classList.add("column3");
+                } else if (idx == 1 || idx == 4 || idx == 7) {
+                    console.log(idx, 'multiple of 2');
+                    // divGrid.style.setProperty('grid-area', 'col2');
+                    divGrid.classList.add("column2");
+                } else {
+                    console.log(idx, 'multiple of 1');
+                    // divGrid.style.setProperty('grid-area', 'col1');
+                    divGrid.classList.add("column1");
+                }
+                divImage.setAttribute('class', 'image');
+                divInfo.setAttribute('class', 'info');
+                divAction.setAttribute('class', 'action');
+
+
+                div = document.createElement('div');
                 pName = document.createElement('p');
+
                 pFireRate = document.createElement('p');
                 pDamage = document.createElement('p');
+
+                divFireRateOuter = document.createElement('div');
+                divFireRateOuter.setAttribute('class', 'progress-outer');
+                divFireRateInner = document.createElement('div');
+                divFireRateInner.style.setProperty('width', ((50 - weapons[weapon].fireRate) / 100) * 100 + '%');
+                divFireRateOuter.appendChild(divFireRateInner);
+                divDamageOuter = document.createElement('div');
+                divDamageOuter.setAttribute('class', 'progress-outer');
+                divDamageInner = document.createElement('div');
+                divDamageInner.style.setProperty('width', (weapons[weapon].damage / 100) * 100 + '%');
+                divDamageOuter.appendChild(divDamageInner);
+
                 pClipSize = document.createElement('p');
-                pEquipped = document.createElement('p');
                 inputEquipped = document.createElement('input');
+                labelEquipped = document.createElement('label');
+                buttonWeapon = document.createElement('button');
+                pAmmo = document.createElement('p');
+                buttonAmmo = document.createElement('button');
+
+                if (weapons[weapon].purchased) {
+                    buttonWeapon.textContent = 'Owned';
+                } else if (user["player_level"] < weapons[weapon].unlocksAt) {
+                    buttonWeapon.textContent = 'Unlocks at level ' + weapons[weapon].unlocksAt;
+                } else {
+                    buttonWeapon.textContent = 'Buy for $' + weapons[weapon].price;
+                    buttonAmmo.setAttribute('disabled', true);
+                }
+                if (user["player_level"] < weapons[weapon].unlocksAt || weapons[weapon].purchased || user["money"] < weapons[weapon].price) {
+                    buttonWeapon.setAttribute('disabled', true);
+                }
+                buttonWeapon.name = weapon;
+                buttonWeapon.addEventListener('click', function (event) {
+                    purchaseWeapon(event);
+                });
+
+                if (weapons[weapon].currentAmmo < 0) {
+                    pAmmo.textContent = 'Current Ammo: ' + weapons[weapon].clipSize + '/' + '--';
+                    buttonAmmo.textContent = 'Unlimited Ammo';
+                    buttonAmmo.setAttribute('disabled', true);
+                } else {
+                    pAmmo.textContent = 'Current Ammo: ' + weapons[weapon].clipSize + '/' + weapons[weapon].currentAmmo;
+                    buttonAmmo.textContent = 'Buy Ammo for $' + weapons[weapon].ammoPrice;
+                    buttonAmmo.addEventListener('click', function (event) {
+                        purchaseAmmo(event);
+                    });
+                }
+                buttonAmmo.name = weapon;
 
                 inputEquipped.setAttribute('type', 'radio');
+                inputEquipped.setAttribute('class', 'equip-input');
                 inputEquipped.setAttribute('name', 'equipped');
-                if (weapons[weapon].equipped) {
+                inputEquipped.setAttribute('id', weapon);
+                labelEquipped.setAttribute('for', weapon);
+                if (weapon == user.equipped) {
                     inputEquipped.setAttribute('checked', true);
+                }
+                if (!weapons[weapon].purchased || user["player_level"] < weapons[weapon].unlocksAt) {
+                    inputEquipped.setAttribute('disabled', true);
                 }
                 inputEquipped.addEventListener('change', function (event) {
                     updateWeaponList(event);
                 });
 
+                pName.textContent = 'Name: ' + weapons[weapon].displayName;
+                // pFireRate.textContent = 'Fire rate: ' + weapons[weapon].fireRate;
+                // pDamage.textContent = 'Damage: ' + weapons[weapon].damage;
+                pFireRate.textContent = 'Fire rate:';
+                pDamage.textContent = 'Damage:';
+                pClipSize.textContent = 'Clip-size: ' + weapons[weapon].clipSize;
+                labelEquipped.textContent = 'Equipped:';
+                inputEquipped.value = weapon;
 
-                pName.textContent = 'Name: ' + weapons[weapon].sprite;
-                pFireRate.textContent = 'Fire rate: ' + weapons[weapon].fireRate;
-                pDamage.textContent = 'Damage: ' + weapons[weapon].damage;
-                pClipSize.textContent = 'Clip: ' + weapons[weapon].clipSize;
-                inputEquipped.value = weapons[weapon].sprite;
+                divInfo.appendChild(pName);
+                divInfo.appendChild(pFireRate);
+                divInfo.appendChild(divFireRateOuter);
+                divInfo.appendChild(pDamage);
+                divInfo.appendChild(divDamageOuter);
+                divInfo.appendChild(pClipSize);
 
-                li.appendChild(pName);
-                li.appendChild(pFireRate);
-                li.appendChild(pDamage);
-                li.appendChild(pClipSize);
-                li.appendChild(inputEquipped);
+                divAction.appendChild(labelEquipped);
+                divAction.appendChild(inputEquipped);
+                divAction.appendChild(buttonWeapon);
+                divAction.appendChild(pAmmo);
+                divAction.appendChild(buttonAmmo);
 
-                listEl.appendChild(li);
+                divGrid.appendChild(divImage);
+                divGrid.appendChild(divInfo);
+                divGrid.appendChild(divAction);
+
+                gridEl.appendChild(divGrid);
+
+                inputGroup.push(inputEquipped);
+                purchaseWeaponGroup.push(buttonWeapon);
+                purchaseAmmoGroup.push(buttonAmmo);
             });
+        }
+
+        function purchaseAmmo(event) {
+            console.log('purchaseAmmo', event.target.name);
+            var weapon = event.target.name;
+            if (user["money"] >= weapons[weapon].ammoPrice) {
+                weapons[weapon].currentAmmo += weapons[weapon].clipSize;
+                user["money"] -= weapons[weapon].ammoPrice;
+                moneyEl.textContent = user["money"];
+                event.target.previousSibling.textContent = 'Current Ammo: ' + weapons[weapon].clipSize + '/' + weapons[weapon].currentAmmo;
+                localStorage.setItem('user', JSON.stringify(user));
+                localStorage.setItem('weapons', JSON.stringify(weapons));
+                console.log('purchaseAmmo:', weapons[weapon].currentAmmo);
+
+                purchaseAmmoGroup.forEach((button, idx) => {
+                    if (!button.getAttribute('disabled')) {
+                        if (user["money"] < weapons[weaponKeys[idx]].ammoPrice) {
+                            button.setAttribute('disabled', true);
+                        }
+                    }
+                });
+            } else {
+                console.warn('not enough money');
+            }
+        }
+
+        function purchaseWeapon(event) {
+            var weapon = event.target.name;
+            if (user["money"] >= weapons[weapon].price) {
+                weapons[weapon].purchased = true;
+                user["money"] -= weapons[weapon].price;
+                moneyEl.textContent = user["money"];
+                event.target.setAttribute('disabled', true);
+                event.target.textContent = 'Owned';
+                localStorage.setItem('user', JSON.stringify(user));
+                localStorage.setItem('weapons', JSON.stringify(weapons));
+                console.log('purchaseWeapon:', weapon);
+
+                inputGroup.forEach((input, idx) => {
+                    if (input.getAttribute('value') == weapon) {
+                        input.removeAttribute('disabled');
+                    }
+                });
+                purchaseWeaponGroup.forEach((button, idx) => {
+                    if (!button.getAttribute('disabled')) {
+                        if (user["player_level"] < parseInt(weapons[weaponKeys[idx]].unlocksAt, 10) || user["money"] < weapons[weaponKeys[idx]].price) {
+                            button.setAttribute('disabled', true);
+                        }
+                    }
+
+                    if (event.target.name === purchaseAmmoGroup[idx].name) {
+                        purchaseAmmoGroup[idx].removeAttribute('disabled');
+                    }
+                });
+            } else {
+                console.warn('not enough money');
+            }
         }
 
         function updateWeaponList(event) {
@@ -90,16 +444,15 @@
                 }
             })
             weapons[event.target.value].equipped = true;
-            this.updateWeaponJSON((response) => {
-                weapons = JSON.parse(response);
-                console.log('inventory', weapons);
-            });
+
+            user["equipped"] = event.target.value;
+            localStorage.setItem('user', JSON.stringify(user));
         }
 
         function loadWeaponJSON(callback) {
             var xobj = new XMLHttpRequest();
             xobj.overrideMimeType("application/json");
-            xobj.open('GET', '../assets/weapons/weapon_list.json', true);
+            xobj.open('GET', 'assets/weapons/weapon_list.json', true);
             xobj.onreadystatechange = function () {
                 if (xobj.readyState == 4 && xobj.status == "200") {
                     // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
@@ -109,18 +462,6 @@
             xobj.send(null);
         }
 
-        function updateWeaponJSON(callback, object) {
-            var xobj = new XMLHttpRequest();
-            xobj.overrideMimeType("application/json");
-            xobj.open('POST', '../assets/weapons/weapon_list.json', true);
-            xobj.onreadystatechange = function () {
-                if (xobj.readyState == 4 && xobj.status == "200") {
-                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
-                    callback(xobj.responseText);
-                }
-            };
-            xobj.send(object);
-        }
         window.onload = init;
     </script>
 

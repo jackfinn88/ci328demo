@@ -16,13 +16,38 @@
 
     <!-- Remove borders around the game window -->
     <style type="text/css">
-        body {
-            margin: 0;
+        #game-wrapper {
+            height: 640px;
+        }
+
+        #game {
+            width: 800px;
+            height: 600px;
+            margin: auto;
+            border: 1px solid red;
+        }
+
+        #pause-menu {
+            display: none;
+            position: relative;
+            top: -450px;
+            width: 400px;
+            height: 300px;
+            margin: auto;
+            background-color: grey;
         }
     </style>
 </head>
 
 <body>
+    <div id="game-wrapper">
+        <div id="game"></div>
+
+        <div id="pause-menu">
+            <button onClick="pauseGame()">Resume</button>
+            <button onClick="quitGame()">Quit</button>
+        </div>
+    </div>
 
     <!-- Define entry point -->
     <script type="text/javascript">

@@ -60,7 +60,19 @@
                  "visible":true,
                  "width":70,
                  "x":701,
-                 "y":1681.66666666667
+                 "y":1681.67
+                }, 
+                {
+                 "gid":112,
+                 "height":70,
+                 "id":12,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":70,
+                 "x":349.848,
+                 "y":1886.52
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -68,7 +80,7 @@
          "x":0,
          "y":0
         }],
- "nextobjectid":11,
+ "nextobjectid":13,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.1.4",
@@ -77,7 +89,7 @@
         {
          "columns":14,
          "firstgid":1,
-         "image":"..\/kenney_platformerpack_industrial\/Tilesheet\/platformerPack_industrial_tilesheet.png",
+         "image":"kenney_platformerpack_industrial\/Tilesheet\/platformerPack_industrial_tilesheet.png",
          "imageheight":560,
          "imagewidth":980,
          "margin":0,
@@ -90,7 +102,7 @@
         {
          "columns":14,
          "firstgid":113,
-         "image":"..\/kenney_platformerpack_industrial\/Tilesheet\/platformerPack_industrial_tilesheet.png",
+         "image":"kenney_platformerpack_industrial\/Tilesheet\/platformerPack_industrial_tilesheet.png",
          "imageheight":560,
          "imagewidth":980,
          "margin":0,

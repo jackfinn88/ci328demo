@@ -5,13 +5,30 @@
     <meta charset="UTF-8" />
     <title>CI328 Phaser Demo</title>
 
+    <!-- Load user files -->
+    <script src="js/index.js"></script>
+
+    <!-- Remove borders around the game window -->
+    <style type="text/css">
+        #wrapper {
+            width: 800px;
+            height: 600px;
+            margin: auto;
+            border: 1px solid red;
+        }
+    </style>
 </head>
 
 <body>
+    <div id="wrapper">
+        <a href="game.html">Game</a>
+        <a href="inventory.html">Inventory</a>
+    </div>
 
-    <a href="/game.html">Game</a>
-    <a href="/inventory.html">Inventory</a>
-
+    <!-- Load weapon list -->
+    <script type="text/javascript">
+        window.onload = init;
+    </script>
 </body>
 
 </html>
