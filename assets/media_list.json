@@ -1,20 +1,56 @@
 {
     "audio": [
         {
-            "key": "intro",
-            "path": "assets/audio/start.mp3"
+            "key": "jump",
+            "path": "assets/audio/jump.wav"
         },
         {
-            "key": "bg",
-            "path": "assets/audio/start.mp3"
+            "key": "player_shoot",
+            "path": "assets/audio/player_shoot.mp3"
         },
         {
-            "key": "explode",
-            "path": "assets/audio/explode.mp3"
+            "key": "enemy_shoot",
+            "path": "assets/audio/enemy_shoot.wav"
         },
         {
             "key": "shoot",
-            "path": "assets/audio/shoot.mp3"
+            "path": "assets/audio/shoot.wav"
+        },
+        {
+            "key": "reload",
+            "path": "assets/audio/reload.wav"
+        },
+        {
+            "key": "empty",
+            "path": "assets/audio/empty.wav"
+        },
+        {
+            "key": "win",
+            "path": "assets/audio/win.wav"
+        },
+        {
+            "key": "game_over",
+            "path": "assets/audio/game_over.wav"
+        },
+        {
+            "key": "player_death",
+            "path": "assets/audio/player_death.wav"
+        },
+        {
+            "key": "enemy_death",
+            "path": "assets/audio/enemy_death.mp3"
+        },
+        {
+            "key": "loop1",
+            "path": "assets/audio/loop1.wav"
+        },
+        {
+            "key": "loop2",
+            "path": "assets/audio/loop2.wav"
+        },
+        {
+            "key": "loop3",
+            "path": "assets/audio/loop3.wav"
         }
     ],
     "image": [
@@ -95,22 +131,42 @@
             "path": "assets/weapons/enemies/enemy2_m_pistol.png"
         },
         {
-            "key": "spike",
-            "path": "assets/spike.png"
+            "key": "ladder",
+            "path": "assets/images/ladder.png"
         },
         {
-            "key": "ladder",
-            "path": "assets/ladder.png"
+            "key": "level_exit",
+            "path": "assets/images/level_exit2.png"
         },
         {
             "key": "invisible_wall",
-            "path": "assets/invisible_wall.png"
+            "path": "assets/images/invisible_wall.png"
+        },
+        {
+            "key": "ammo",
+            "path": "assets/images/ammo.png"
+        },
+        {
+            "key": "cash",
+            "path": "assets/images/cash.png"
+        },
+        {
+            "key": "briefcase",
+            "path": "assets/images/briefcase.png"
+        },
+        {
+            "key": "money",
+            "path": "assets/images/money_bag.png"
+        },
+        {
+            "key": "backpack",
+            "path": "assets/images/backpack.png"
         }
     ],
     "spritesheet": [
         {
             "key": "tiles",
-            "path": "assets/industrial_tiles.png",
+            "path": "assets/images/industrial_tiles.png",
             "config": {
                 "frameWidth": 70,
                 "frameHeight": 70
@@ -120,18 +176,18 @@
     "atlas": [
         {
             "key": "player",
-            "path": "assets/player.png",
-            "json": "assets/player.json"
+            "path": "assets/characters/player.png",
+            "json": "assets/characters/player.json"
         },
         {
             "key": "enemy1",
-            "path": "assets/enemy1.png",
-            "json": "assets/enemy1.json"
+            "path": "assets/characters/enemy1.png",
+            "json": "assets/characters/enemy1.json"
         },
         {
             "key": "enemy2",
-            "path": "assets/enemy2.png",
-            "json": "assets/enemy2.json"
+            "path": "assets/characters/enemy2.png",
+            "json": "assets/characters/enemy2.json"
         },
         {
             "key": "shotgun",

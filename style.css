@@ -1,0 +1,288 @@
+/* INDEX/HOUSE */
+body {
+    font-family: 'Ubuntu';
+}
+
+#wrapper {
+    width: 800px;
+    height: 600px;
+    margin: auto;
+    border: 1px solid grey;
+}
+
+.tab {
+    height:100%;
+}
+
+.tab:nth-child(1) {
+    display: block;
+}
+
+.tab:nth-child(n+2) {
+    display: none;
+}
+
+.top-screen {
+    min-height: 75%;
+    height:75%;
+}
+
+.menu {
+    text-align: center;
+    margin: 10px auto 0;
+    min-width: 60%;
+    max-width: 80%;
+    width: auto;
+}
+
+.menu button {
+    font-family: 'Concert One';
+    font-size: 20px;
+    background-color: #2075c9; /* Green background */
+    border: 1px solid #2196F3; /* Green border */
+    color: white; /* White text */
+    cursor: pointer; /* Pointer/hand icon */
+    width: 100%; /* Set a width if needed */
+    min-height: 36px;
+    display: block; /* Make the buttons appear below each other */
+}
+
+.menu button:hover {
+    background-color: #98c3ed;
+}
+
+h1 {
+    margin:0;
+    padding-top: 50px;
+    text-align: center;
+}
+
+.main-bg {
+    width: 80%;
+    text-align: center;
+    margin: auto;
+}
+
+.main-bg img {
+    padding: 10px;
+}
+
+/* LEVEL-TAB */
+.level-bg {
+    background-image: url('assets/site/level_bg.png');
+    position: relative;
+    top: 10px;
+    width: 80%;
+    margin: auto;
+    height: 90%;
+}
+
+.level-bg h1 {
+    padding-top: 40px;
+}
+
+.level-buttons {
+    margin: auto;
+    width:50%;
+    text-align: center;
+}
+
+.level-buttons button {
+    background-color: lightgrey;
+    color: black;
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    border: 2px solid;
+    margin: 10px;
+    font-family: 'Ubuntu';
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.level-buttons button:hover:not([disabled]) {
+    background-color: rgb(58, 58, 58);
+    color: white;
+}
+
+.level-buttons img {
+    display: block;
+    margin: auto;
+    padding: 10px;
+}
+
+/* GAME-TAB */
+#game-wrapper {
+    height: 640px;
+}
+
+#game {
+    width: 800px;
+    height: 600px;
+    margin: auto;
+}
+
+#game-menu {
+    display: none;
+    border: 10px outset dodgerblue;
+    text-align: center;
+    position: relative;
+    top: -450px;
+    width: 400px;
+    height: 300px;
+    margin: auto;
+    background-color: steelblue;
+}
+
+#game-menu .info {
+    font-size: 20px;
+}
+
+.feedback {
+    height: 50%;
+}
+
+
+/* INVENTORY-TAB */
+#grid-wrapper {
+    overflow: hidden;
+}
+
+.image {
+    grid-area: image;
+}
+
+.weapon-info {
+    grid-area: info;
+    height: 50px;
+    font-size: 10px;
+}
+
+.weapon-info p {
+    text-align: left;
+    margin: 0;
+}
+
+.action {
+    grid-area: action;
+    height: 50px;
+}
+
+.column1 {
+    grid-area: auto 1;
+}
+
+.column2 {
+    grid-area: auto 2;
+}
+
+.column3 {
+    grid-area: auto 3;
+}
+
+#grid-container {
+    display: grid;
+    grid-auto-columns: 3fr;
+    grid-auto-flow: row;
+    grid-template-rows: 187px 187px 187px;
+    grid-template-areas:
+        'col1 col2 col3'
+        'col1 col2 col3'
+        'col1 menu menu';
+    grid-gap: 10px;
+    background-color: #2196F3;
+    padding: 10px;
+
+}
+
+#grid-container>div {
+    background-color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    padding: 5px 5px;
+    font-size: 10px;
+}
+
+.grid {
+    display: grid;
+    grid-auto-columns: 1fr;
+    grid-auto-rows: 2fr;
+    grid-auto-flow: column;
+    grid-template-areas:
+        'image image'
+        'info action';
+    grid-gap: 10px;
+    background-color: #2196F3;
+    padding: 10px;
+}
+
+.grid>div {
+    height: calc(100% - 10px);
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 5px;
+}
+
+.action button {
+    font-size: 10px;
+    width: 80%;
+}
+
+#resources {
+    display: none;
+    margin: 30px auto;
+    width: 50%;
+}
+
+#resources p {
+    display: inline;
+    margin-right: 10px;
+}
+
+.progress-outer {
+    width: 80%;
+    height: 10px;
+    margin: 3px;
+    padding: 3px;
+    border: 1px solid black;
+}
+
+.progress-outer div {
+    height: 100%;
+    background-color: black;
+}
+
+#grid-container .menu-item {
+    grid-area: menu;
+}
+
+table {
+    width: 80%;
+    margin: auto;
+    font-size:16px;
+    table-layout: fixed;
+}
+
+th, td {
+    height: 20px;
+}
+
+.details {
+    margin: 0;
+}
+
+#money::before {
+    content: '£';
+}
+
+/* SETTINGS-TAB*/
+.options {
+    width: 80%;
+    margin: auto;
+}
+
+#settings-tab .options .menu button {
+    margin: 10px 0;
+}
+
+#settings-tab table {
+    text-align: center;
+}

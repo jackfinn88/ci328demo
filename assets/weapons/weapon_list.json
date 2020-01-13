@@ -10,7 +10,7 @@
         },
         "damage": 20,
         "clipSize": 15,
-        "currentAmmo": -1,
+        "currentAmmo": 0,
         "recoilX": false,
         "reloadDuration": 750,
         "unlocksAt": 0,

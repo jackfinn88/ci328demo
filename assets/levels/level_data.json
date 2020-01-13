@@ -1,0 +1,35 @@
+{
+    "1": {
+        "tilemap": "assets/levels/level01.json",
+        "background": "#82d2ed",
+        "music": "loop1",
+        "objectiveItem": "backpack",
+        "objectiveText": "Steal the Backpack and get away",
+        "hintText": "Now get out of there, quickly!",
+        "killReward": 40,
+        "cashReward": 500,
+        "expReward": 100
+    },
+    "2": {
+        "tilemap": "assets/levels/level02.json",
+        "background": "#5c4c6e",
+        "music": "loop2",
+        "objectiveItem": "briefcase",
+        "objectiveText": "Collect the Briefcase and take it to the buyer",
+        "hintText": "Great, now get it to the buyer, quickly!",
+        "killReward": 50,
+        "cashReward": 650,
+        "expReward": 200
+    },
+    "3": {
+        "tilemap": "assets/levels/level03.json",
+        "background": "#393d7d",
+        "music": "loop3",
+        "objectiveItem": "money",
+        "objectiveText": "Grab the Money and take it to the dropoff",
+        "hintText": "Good! Now get it to the dropoff!",
+        "killReward": 70,
+        "cashReward": 800,
+        "expReward": 300
+    }
+}

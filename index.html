@@ -3,28 +3,176 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>CI328 Phaser Demo</title>
+    <title>Li'l Thug Outlaw</title>
+
+    <link href='https://fonts.googleapis.com/css?family=Ubuntu|Concert+One' rel='stylesheet'>
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <!-- Load phaser -->
+    <script type="text/javascript" src="libs/phaser.min.js"></script>
 
     <!-- Load user files -->
     <script src="js/index.js"></script>
+    <script src="js/inventory.js"></script>
 
-    <!-- Remove borders around the game window -->
-    <style type="text/css">
-        #wrapper {
-            width: 800px;
-            height: 600px;
-            margin: auto;
-            border: 1px solid red;
-        }
-    </style>
+    <script src="js/main.js"></script>
+    <script src="js/systems.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/entities.js"></script>
 </head>
 
 <body>
     <div id="wrapper">
-        <a href="game.html">Game</a>
-        <a href="inventory.html">Inventory</a>
+        <div id="main-tab" class="tab">
+            <div class="top-screen">
+                <h1>Li'l Thug Outlaw</h1>
+                <div class="main-bg">
+                    <img src="assets/site/main_bg.png" alt="bg" height="320" width="640">
+                </div>
+            </div>
+            <div>
+                <div class="menu">
+                    <button onClick="onLevelClick()">LEVEL SELECT</button>
+                    <button onClick="onInventoryClick()">INVENTORY</button>
+                    <button onClick="onSettingsClick()">SETTINGS</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="inventory-tab" class="tab">
+            <div id="grid-wrapper">
+                <div id="grid-container">
+                    <div class="menu-item">
+                        <div class="user-details">
+                            <table>
+                                <tr>
+                                    <th>CASH</th>
+                                    <th>LEVEL</th>
+                                    <th>NEXT</th>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <p class="details" id="money"></p>
+                                    </td>
+                                    <td>
+                                        <p class="details" id="player_level"></p>
+                                    </td>
+                                    <td>
+                                        <p class="details" id="player_next_level"></p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="menu">
+                            <button onClick="changeToTab('main')">HOME</button>
+                            <button onClick="onLevelClick()">LEVEL SELECT</button>
+                            <button onClick="onSettingsClick()">SETTINGS</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="level-tab" class="tab">
+            <div class="top-screen">
+                <div class="level-bg">
+                    <h1>Level Select</h1>
+                    <div class="level-buttons">
+                        <img src="assets/site/unknown_face.png" alt="Unknown face" height="200" width="150">
+                        <button onClick="loadLevel(1)">LEVEL 1</button>
+                        <button onClick="loadLevel(2)">LEVEL 2</button>
+                        <button onClick="loadLevel(3)">LEVEL 3</button>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="menu">
+                    <button onClick="changeToTab('main')">HOME</button>
+                    <button onClick="onInventoryClick()">INVENTORY</button>
+                    <button onClick="onSettingsClick()">SETTINGS</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="game-tab" class="tab">
+            <div id="game-wrapper">
+                <div id="game"></div>
+
+                <div id="game-menu">
+                    <div class="feedback">
+                        <h4 class="info"></h4>
+                        <p class="score"></p>
+                        <p class="cash"></p>
+                    </div>
+                    <div class="menu">
+                        <button></button>
+                        <button onClick="quitGame()">QUIT</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="settings-tab" class="tab">
+            <div class="top-screen">
+                <h1>Settings</h1>
+                <div class=options>
+                    <fieldset name="difficulty" class="option">
+                        <legend>Difficulty</legend>
+                        <label>Easy<input name="difficulty" type="radio" value="1"></label>
+                        <label>Normal<input name="difficulty" type="radio" value="2"></label>
+                        <label>Hard<input name="difficulty" type="radio" value="3"></label>
+                    </fieldset>
+                    <fieldset name="sfx" class="option">
+                        <legend>SoundFX Volume</legend>
+                        <label>Volume<input type="range" name="sfx" min="0" max="10" value="5"></label>
+                    </fieldset>
+                    <fieldset name="music" class="option">
+                        <legend>Music Volume</legend>
+                        <label>Volume<input type="range" name="music" min="0" max="10" value="5"></label>
+                    </fieldset>
+                    <div class="menu">
+                        <button onClick="saveSettings(this)">SAVE</button>
+                    </div>
+                    <fieldset>
+                        <legend>Controls</legend>
+                        <table>
+                            <tr>
+                                <th>Movement</th>
+                                <th>Shoot</th>
+                                <th>Reload</th>
+                                <th>Pause</th>
+                            </tr>
+                            <tr>
+                                <td>WASD</td>
+                                <td>SPACE</td>
+                                <td>R</td>
+                                <td>P</td>
+                            </tr>
+                        </table>
+                    </fieldset>
+                </div>
+            </div>
+            <div>
+                <div class="menu">
+                    <button onClick="changeToTab('main')">HOME</button>
+                    <button onClick="onLevelClick()">LEVEL SELECT</button>
+                    <button onClick="changeToTab('inventory')">INVENTORY</button>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <div id="resources">
+        <div>
+            <p>Level: </p>
+            <p id="level"></p><input type="text"><button onClick="updateLevel(event)">Update Level</button>
+        </div>
+        <div>
+            <p>Cash: </p>
+            <p id="money"></p><input type="text"><button onClick="updateMoney(event)">Update Cash</button>
+        </div>
+    </div>
     <!-- Load weapon list -->
     <script type="text/javascript">
         window.onload = init;

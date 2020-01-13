@@ -1,11 +1,15 @@
 class Player {
     constructor() {
-        var container = game.add.container(100, 1800);
+        var container = game.add.container(0, (map.heightInPixels * 0.8));
         this.playerContainer = container;
 
         this.isFalling = false;
         this.fireRateTimer;
         this.isDead = false;
+        this.health = 100;
+        this.armor = user["difficulty"] > 1 ? user["difficulty"] > 2 ? 100 : 50 : 0;
+        this.canClimb = false;
+        this.reachedExit = false;
 
         this.weapon = game.weapons[user["equipped"]];
 
@@ -36,53 +40,40 @@ class Player {
         this.playerContainer.add(weaponSprite);
     }
 
-    onLeftKeydown() {
-        this.playerContainer.body.setVelocityX(-200);
+    translateX(positiveAxis) {
+        this.playerContainer.body.setVelocityX(positiveAxis ? 200 : -200);
 
         // play left walk animation
-        if (this.playerContainer.body.onFloor() || this.playerContainer.canClimb) {
+        if (this.playerContainer.body.onFloor() || this.canClimb) {
             this.sprite.anims.play('walking', true);
         }
 
         // adjust weapon position
-        this.playerContainer.getByName(this.weapon.name).x = -20;
+        this.playerContainer.getByName(this.weapon.name).x = positiveAxis ? 20 : -20;
 
         // flip the sprite to the left
-        this.playerContainer.getByName('player').flipX = true;
-        this.playerContainer.getByName(this.weapon.name).flipX = true;
+        this.playerContainer.getByName('player').flipX = positiveAxis ? false : true;
+        this.playerContainer.getByName(this.weapon.name).flipX = positiveAxis ? false : true;
     }
 
-    onRightKeydown() {
-        this.playerContainer.body.setVelocityX(200);
-
-        // play right walk animation
-        if (this.playerContainer.body.onFloor() || this.playerContainer.canClimb) {
-            this.sprite.anims.play('walking', true);
-        }
-
-        // adjust weapon position
-        this.playerContainer.getByName(this.weapon.name).x = 20;
-
-        // flip the sprite to the right
-        this.playerContainer.getByName('player').flipX = false;
-        this.playerContainer.getByName(this.weapon.name).flipX = false;
-    }
-
-    onUpKeydown() {
-        if (world.player.playerContainer.canClimb) {
+    translateY(positiveAxis) {
+        if (world.player.canClimb) {
             world.player.playerContainer.body.setAllowGravity(false);
-            this.playerContainer.body.setVelocityY(-200);
+            this.playerContainer.body.setVelocityY(positiveAxis ? 200 : -200);
         } else {
-            world.player.playerContainer.body.setAllowGravity(true);
-            if (this.playerContainer.body.onFloor()) {
-                this.sprite.anims.play('jump', true); // jump
-                this.playerContainer.body.setVelocityY(-350);
+            if (!positiveAxis) {
+                world.player.playerContainer.body.setAllowGravity(true);
+                if (this.playerContainer.body.onFloor()) {
+                    this.sprite.anims.play('jump', true); // jump
+                    audio.jump.play('', { 'volume': audio.volume.sfx });
+                    this.playerContainer.body.setVelocityY(-400);
+                }
             }
         }
     }
 
     onUpKeyup() {
-        if (world.player.playerContainer.canClimb) {
+        if (world.player.canClimb) {
             this.playerContainer.body.setVelocityY(0);
             // idle frame
             this.sprite.anims.play('idle', true);
@@ -91,22 +82,8 @@ class Player {
         }
     }
 
-    onDownKeydown() {
-        if (world.player.playerContainer.canClimb) {
-            world.player.playerContainer.body.setAllowGravity(false);
-            this.playerContainer.body.setVelocityY(200);
-        }
-        /*else {
-            world.player.playerContainer.body.setAllowGravity(true);
-            if (this.playerContainer.body.onFloor()) {
-                this.sprite.anims.play('jump', true); // jump
-                this.playerContainer.body.setVelocityY(-600);
-            }
-        }*/
-    }
-
     onDownKeyup() {
-        if (world.player.playerContainer.canClimb) {
+        if (world.player.canClimb) {
             this.playerContainer.body.setVelocityY(0);
         }
     }
@@ -116,7 +93,7 @@ class Player {
         setTimeout(() => {
             if (!input.keys['A'].isDown && !input.keys['D'].isDown) {
                 // if not and player is down then stop moving
-                if (this.playerContainer.body.onFloor() || this.playerContainer.canClimb) {
+                if (this.playerContainer.body.onFloor() || this.canClimb) {
                     // idle frame
                     this.sprite.anims.play('idle', true);
 
@@ -137,8 +114,8 @@ class Player {
                 this.lastFired++;
             } else {
                 this.lastFired = 0;
-                let spawnOffset = { x: this.weapon.barrelOffset.x, y: this.weapon.barrelOffset.y };
-                let recoilBounce = 3;
+                var spawnOffset = { x: this.weapon.barrelOffset.x, y: this.weapon.barrelOffset.y };
+                var recoilBounce = 3;
                 if (this.playerContainer.getByName(this.weapon.name).flipX) {
                     spawnOffset.x = -this.weapon.barrelOffset.x;
                     recoilBounce = -recoilBounce;
@@ -164,41 +141,14 @@ class Player {
                     }, 50);
                     // fire bullet
                     world.spawnBullet(world.player.playerContainer.x + this.playerContainer.getByName(this.weapon.name).x + spawnOffset.x, world.player.playerContainer.y + this.playerContainer.getByName(this.weapon.name).y + spawnOffset.y, this.sprite.flipX ? true : false);
-                    audio.shoot.play();
+                    audio.shoot.play('', { 'volume': audio.volume.sfx });
                     this.weapon.clip--;
-                    setAmmoText(this.weapon.clip + '/' + (this.weapon.ammo < 0 ? '--' : this.weapon.ammo));
+                    ui.updateText(ui.textTypes.AMMO, this.weapon.clip + '/' + (this.weapon.ammo < 0 ? '--' : this.weapon.ammo));
                 }
             }
         } else {
             if (!this.weapon.isReloading) {
                 this.reloadWeapon();
-
-                /*// flag boolean to prevent multiple calls
-                this.weapon.isReloading = true;
-
-                // update ui
-                var feedback = this.weapon.ammo > 0 ? 'Reloading...' : this.weapon.ammo < 0 ? 'Unlimited... ' : 'Empty...';
-                setAmmoText(feedback);
-                setTimeout(() => {
-                    if (this.weapon.ammo > this.weapon.clipSize) {
-                        this.weapon.clip = this.weapon.clipSize;
-                        this.weapon.ammo -= this.weapon.clipSize;
-                    } else if (this.weapon.ammo > 0) {
-                        this.weapon.clip = this.weapon.ammo;
-                        this.weapon.ammo = 0;
-                    } else if (this.weapon.ammo < 0) {
-                        // weapon is pistol/unlimited ammo
-                        this.weapon.clip = this.weapon.clipSize;
-                    } else {
-                        // weapon is empty - switch to pistol
-                        this.changeWeaponTo('pistol');
-                    }
-
-                    // update ui
-                    feedback = this.weapon.clip + '/' + (this.weapon.ammo < 0 ? '--' : this.weapon.ammo);
-                    setAmmoText(feedback);
-                    this.weapon.isReloading = false;
-                }, this.weapon.reloadDuration);*/
             }
         }
     }
@@ -208,10 +158,11 @@ class Player {
             if (!this.weapon.isReloading) {
                 // flag boolean to prevent multiple calls
                 this.weapon.isReloading = true;
+                audio.reload.play('', { 'volume': audio.volume.sfx });
 
                 // update ui
                 var feedback = this.weapon.ammo > 0 ? 'Reloading...' : this.weapon.ammo < 0 ? 'Unlimited... ' : 'Empty...';
-                setAmmoText(feedback);
+                ui.updateText(ui.textTypes.AMMO, feedback);
                 setTimeout(() => {
                     if (this.weapon.ammo > this.weapon.clipSize) {
                         this.weapon.ammo -= (this.weapon.clipSize - this.weapon.clip);
@@ -219,17 +170,13 @@ class Player {
                     } else if (this.weapon.ammo > 0) {
                         this.weapon.clip = this.weapon.ammo;
                         this.weapon.ammo = 0;
-                    } else if (this.weapon.ammo < 0) {
-                        // weapon is pistol/unlimited ammo
-                        this.weapon.clip = this.weapon.clipSize;
                     } else {
-                        // weapon is empty - switch to pistol
-                        this.changeWeaponTo('pistol');
+                        audio.empty.play('', { 'volume': audio.volume.sfx });
                     }
 
                     // update ui
-                    feedback = this.weapon.clip + '/' + (this.weapon.ammo < 0 ? '--' : this.weapon.ammo);
-                    setAmmoText(feedback);
+                    feedback = this.weapon.clip + '/' + this.weapon.ammo;
+                    ui.updateText(ui.textTypes.AMMO, feedback);
                     this.weapon.isReloading = false;
                 }, this.weapon.reloadDuration);
             }
@@ -256,7 +203,7 @@ class Player {
         this.playerContainer.add(weaponSprite);
 
         // update ui with new weapon
-        setAmmoText(this.weapon.clip + '/' + (this.weapon.ammo < 0 ? '--' : this.weapon.ammo));
+        ui.updateText(ui.textTypes.AMMO, this.weapon.clip + '/' + (this.weapon.ammo < 0 ? '--' : this.weapon.ammo));
     }
 
     stopShooting() {
@@ -268,50 +215,21 @@ class Player {
         }, this.fireRate - this.lastFired);
     }
 
-    playerHit(player, spike) {
-        if (!world.player.isDead) {
-            world.player.isDead = true;
-            world.player.stopShooting();
-            input.disable();
-            world.player.sprite.anims.play('death', true);
-            world.player.playerContainer.body.setVelocity(0, 0);
-
-            world.player.playerContainer.setAlpha(0);
-            this.tweens.add({
-                targets: world.player.playerContainer,
-                alpha: 1,
-                duration: 100,
-                ease: 'Linear',
-                repeat: 5,
-            });
-            world.player.playerContainer.list[1].y += 10;
-            setTimeout(() => {
-                world.player.isDead = false;
-                input.enable();
-                world.player.sprite.anims.play('idle', true);
-                world.player.playerContainer.setX(100);
-                world.player.playerContainer.setY(1800);
-
-                world.player.playerContainer.list[1].y -= 10;
-            }, 1000);
-        }
-    }
-
-    onDeath(callback) {
-        //this.sprite.events.onKilled.add(callback);
+    onDeath() {
+        this.isDead = true;
+        pauseGame(true);
     }
 
     update() {
         // check if now on floor and was previously falling
         if (this.playerContainer.body.onFloor() && this.isFalling) {
-            console.log('landed');
             this.isFalling = false;
 
-            // act if any keys are down at time of landing
+            // resume movement if any keys are down at time of landing
             if (input.keys['A'].isDown) {
-                this.onLeftKeydown();
+                this.translateX(false);
             } else if (input.keys['D'].isDown) {
-                this.onRightKeydown();
+                this.translateX(true);
             } else {
                 this.idle();
             }
