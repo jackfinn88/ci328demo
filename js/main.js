@@ -96,7 +96,7 @@ function create() {
     input.add('SPACE', Phaser.Input.Keyboard.KeyCodes.SPACE, function () { world.player.startShooting(); }, function () { world.player.stopShooting(); });
     input.add('P', Phaser.Input.Keyboard.KeyCodes.P, function () { pauseGame(false); }, undefined);
     input.add('R', Phaser.Input.Keyboard.KeyCodes.R, function () { world.player.reloadWeapon(); }, undefined);
-    input.add('Q', Phaser.Input.Keyboard.KeyCodes.Q, function () { testWin(); }, undefined);
+    // input.add('Q', Phaser.Input.Keyboard.KeyCodes.Q, function () { testWin(); }, undefined);
 
     // set the boundaries of our game world
     this.physics.world.bounds.width = groundLayer.width;
@@ -220,7 +220,6 @@ function onCollisionBulletPlayer(player, bullet) {
     var dist = distance({ 'x': bullet.startX, 'y': bullet.startY }, player);
     var damageReduction = dist > 500 ? 0.7 : dist > 300 ? 0.9 : 1;
     var damage = bullet.damage * damageReduction;
-    console.log(damage)
 
     // kill or reduce enemy health
     if (!world.player.isDead) {
