@@ -1,40 +1,24 @@
 
-var weapons;
 var weaponKeys;
 var gridEl, levelEl, moneyEl;
 var equipped;
-var user;
 var inputGroup = [];
 var purchaseWeaponGroup = [];
 var purchaseAmmoGroup = [];
 
 function initializeInventory() {
-    var storedWeapons = localStorage.getItem('weapons');
-    if (storedWeapons) {
-        weapons = JSON.parse(storedWeapons);
-        weaponKeys = Object.keys(weapons);
-        user = JSON.parse(localStorage.getItem('user'));
+    user = JSON.parse(localStorage.getItem('user'));
+    accounts = JSON.parse(localStorage.getItem('accounts'));
+    account = JSON.parse(localStorage.getItem('account'));
+    weapons = user["weapons"];
+    weaponKeys = Object.keys(weapons);
 
-        this.createList();
-        this.loadResources();
-        this.updateDetails();
-    } else {
-        getJSON('assets/weapons/weapon_list.json', (response) => {
-            weapons = JSON.parse(response);
-            weaponKeys = Object.keys(weapons);
-            user = JSON.parse(localStorage.getItem('user'));
-            if (!user.equipped) {
-                user.equipped = 'pistol';
-            }
-            localStorage.setItem('weapons', JSON.stringify(weapons))
-            this.createList();
-            this.loadResources();
-            this.updateDetails();
-        });
-    }
-
+    createList();
+    loadResources();
+    updateDetails();
 }
 
+// debug
 function updateLevel(event) {
     var level = parseInt(event.target.previousSibling.value, 10);
     if (level >= 0) {
@@ -55,12 +39,19 @@ function updateLevel(event) {
             }
         });
 
+        // update save data
+        var idx = accounts.findIndex(account => account.id === user.id);
+        accounts[idx] = user;
         localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('accounts', JSON.stringify(accounts));
+
+        updateRecord();
 
         updateDetails();
     }
 }
 
+// debug
 function updateMoney(event) {
     var money = parseInt(event.target.previousSibling.value, 10);
     if (money >= 0) {
@@ -88,7 +79,13 @@ function updateMoney(event) {
             }
         });
 
+        // update save data
+        var idx = accounts.findIndex(account => account.id === user.id);
+        accounts[idx] = user;
         localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('accounts', JSON.stringify(accounts));
+
+        updateRecord();
 
         updateDetails();
     }
@@ -150,6 +147,8 @@ function createList() {
 
         // create weapon detail elements
         pName = document.createElement('p');
+        spanName = document.createElement('span');
+        spanName.setAttribute('class', 'span-weapon-name');
         pFireRate = document.createElement('p');
         pDamage = document.createElement('p');
         pClipSize = document.createElement('p');
@@ -189,7 +188,10 @@ function createList() {
         });
 
         // determine purchase ammo button state
-        pAmmo.textContent = 'Current Ammo: ' + weapons[weapon].clipSize + '/' + weapons[weapon].currentAmmo;
+        // pAmmo.textContent = 'Current Ammo: ' + weapons[weapon].clipSize + '/' + weapons[weapon].currentAmmo;
+        var currentClip = weapons[weapon].currentAmmo >= weapons[weapon].clipSize ? weapons[weapon].clipSize : weapons[weapon].currentAmmo;
+        var currentAmmo = weapons[weapon].currentAmmo - currentClip;
+        pAmmo.textContent = 'Current Ammo: ' + currentClip + '/' + currentAmmo;
         buttonAmmo.textContent = 'Buy Ammo for $' + weapons[weapon].ammoPrice;
         buttonAmmo.addEventListener('click', function (event) {
             purchaseAmmo(event);
@@ -216,7 +218,9 @@ function createList() {
         });
 
         // define weapon details
-        pName.textContent = 'Name: ' + weapons[weapon].displayName;
+        // pName.textContent = 'Name: ' + weapons[weapon].displayName;
+        pName.textContent = 'Name: ';
+        spanName.textContent = weapons[weapon].displayName;
         pFireRate.textContent = 'Fire rate:';
         pDamage.textContent = 'Damage:';
         pClipSize.textContent = 'Clip-size: ' + weapons[weapon].clipSize;
@@ -224,6 +228,7 @@ function createList() {
         inputEquipped.value = weapon;
 
         // append deatils to info
+        pName.appendChild(spanName);
         divInfo.appendChild(pName);
         divInfo.appendChild(pFireRate);
         divInfo.appendChild(divFireRateOuter);
@@ -258,9 +263,20 @@ function purchaseAmmo(event) {
         weapons[weapon].currentAmmo += weapons[weapon].clipSize;
         user["money"] -= weapons[weapon].ammoPrice;
         moneyEl.textContent = user["money"];
-        event.target.previousSibling.textContent = 'Current Ammo: ' + weapons[weapon].clipSize + '/' + weapons[weapon].currentAmmo;
+        // event.target.previousSibling.textContent = 'Current Ammo: ' + weapons[weapon].clipSize + '/' + weapons[weapon].currentAmmo;
+        var currentClip = weapons[weapon].currentAmmo >= weapons[weapon].clipSize ? weapons[weapon].clipSize : weapons[weapon].currentAmmo;
+        var currentAmmo = weapons[weapon].currentAmmo - currentClip;
+        event.target.previousSibling.textContent = 'Current Ammo: ' + currentClip + '/' + currentAmmo;
+
+        // update save data
+        var idx = accounts.findIndex(account => account.id === user.id);
+        user["weapons"] = weapons;
+        accounts[idx] = user;
         localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('weapons', JSON.stringify(weapons));
+        localStorage.setItem('accounts', JSON.stringify(accounts));
+
+        updateRecord();
+
 
         purchaseAmmoGroup.forEach((button, idx) => {
             if (!button.getAttribute('disabled')) {
@@ -282,8 +298,15 @@ function purchaseWeapon(event) {
         moneyEl.textContent = user["money"];
         event.target.setAttribute('disabled', true);
         event.target.textContent = 'Owned';
+
+        // update save data
+        var idx = accounts.findIndex(account => account.id === user.id);
+        user["weapons"] = weapons;
+        accounts[idx] = user;
         localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('weapons', JSON.stringify(weapons));
+        localStorage.setItem('accounts', JSON.stringify(accounts));
+
+        updateRecord();
 
         inputGroup.forEach((input, idx) => {
             if (input.getAttribute('value') == weapon) {
@@ -327,7 +350,14 @@ function updateWeaponList(event) {
     weapons[event.target.value].equipped = true;
 
     user["equipped"] = event.target.value;
+
+    // update save data
+    var idx = accounts.findIndex(account => account.id === user.id);
+    accounts[idx] = user;
     localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('accounts', JSON.stringify(accounts));
+
+    updateRecord();
 }
 
 function getJSON(path, callback) {

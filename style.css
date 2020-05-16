@@ -8,6 +8,18 @@ body {
     height: 600px;
     margin: auto;
     border: 1px solid grey;
+    position: relative;
+}
+
+#footer {
+    color: #242424;
+    font-size: 0.7em;
+    position: fixed;
+    bottom: 16px;
+    text-align: center;
+    left: 0;
+    right: 0;
+    z-index: 1000;
 }
 
 .tab {
@@ -27,6 +39,15 @@ body {
     height:75%;
 }
 
+.user-details {
+    position: absolute;
+    font-size: .8em;
+}
+
+.user-details table{
+    font-size: .9em;
+}
+
 .menu {
     text-align: center;
     margin: 10px auto 0;
@@ -35,7 +56,9 @@ body {
     width: auto;
 }
 
-.menu button {
+.menu button,
+.form-wrapper button,
+.form-tab input[type="submit"] {
     font-family: 'Concert One';
     font-size: 20px;
     background-color: #2075c9; /* Green background */
@@ -47,7 +70,9 @@ body {
     display: block; /* Make the buttons appear below each other */
 }
 
-.menu button:hover {
+.menu button:hover,
+.form-wrapper button:hover,
+.form-tab input[type="submit"]:hover {
     background-color: #98c3ed;
 }
 
@@ -65,6 +90,71 @@ h1 {
 
 .main-bg img {
     padding: 10px;
+}
+
+#main-tab .top-screen > h1 {
+    padding-top: 60px;
+}
+
+/* FORM TABS */
+.form-wrapper {
+    border: 1px solid #2196F3;
+    padding: 8px;
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    top: 30%;
+}
+
+.form-tab > div {
+    height: 100%;
+    width: 40%;
+    margin: auto;
+    position: relative;
+}
+
+.form-wrapper label {
+    width: 100px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.form-wrapper input[type="submit"] {
+    margin: 20px auto;
+    width: 50%;
+}
+
+.form-wrapper button {
+    display: inline-block;
+    width: 30%;
+    margin-left: 20px;
+}
+
+#error {
+    visibility: hidden;
+    opacity: 0;
+    width: 50%;
+    height: 36px;
+    border-radius: 5px;
+    background:  #f52f25;
+    color: #fff;
+    line-height: 36px;
+    text-align: center;
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transition: all .5s ease-in-out;
+}
+
+#error.show {
+    visibility: visible;
+    opacity: 1;
+    bottom: 10%;
 }
 
 /* LEVEL-TAB */
@@ -98,6 +188,11 @@ h1 {
     font-family: 'Ubuntu';
     font-size: 12px;
     cursor: pointer;
+}
+
+.level-buttons button[disabled] {
+    background-color: gray;
+    cursor: initial;
 }
 
 .level-buttons button:hover:not([disabled]) {
@@ -180,6 +275,12 @@ h1 {
     grid-area: auto 3;
 }
 
+.span-weapon-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    font-style: italic;
+}
+
 #grid-container {
     display: grid;
     grid-auto-columns: 3fr;
@@ -259,6 +360,7 @@ table {
     margin: auto;
     font-size:16px;
     table-layout: fixed;
+    text-align: center;
 }
 
 th, td {
@@ -280,7 +382,7 @@ th, td {
 }
 
 #settings-tab .options .menu button {
-    margin: 10px 0;
+    margin: 8px 0 0 0;
 }
 
 #settings-tab table {

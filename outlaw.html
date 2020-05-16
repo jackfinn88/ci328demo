@@ -23,7 +23,61 @@
 
 <body>
     <div id="wrapper">
+        <div id="login-tab" class="tab form-tab">
+            <div>
+                <h1>Li'l Thug Outlaw</h1>
+                <div class="form-wrapper">
+                    <form>
+                        <label for="user">Username:</label> <input type="text" name="user"><br>
+                        <label for="pass">Password:</label> <input type="password" name="pass"><br>
+                        <input type="submit">
+                    </form>
+                    Dont have an account?<button onClick="changeToTab('register')">SIGN UP</button>
+                </div>
+            </div>
+        </div>
+        <div id="register-tab" class="tab form-tab">
+            <div>
+                <h1>Li'l Thug Outlaw</h1>
+                <div class="form-wrapper">
+                    <form>
+                        <label for="user">Username:</label> <input type="text" name="user"><br>
+                        <label for="pass">Password:</label> <input type="password" name="pass"><br>
+                        <label for="confirm">Confirm:</label> <input type="password" name="confirm"><br>
+                        <input type="submit">
+                    </form>
+                    Already have an account?<button onClick="changeToTab('login')">SIGN IN</button>
+                </div>
+            </div>
+        </div>
+        <div id="error"></div>
+
+
         <div id="main-tab" class="tab">
+            <div class="user-details">
+                <table>
+                    <tr>
+                        <th>USER</th>
+                        <th>CASH</th>
+                        <th>LEVEL</th>
+                        <th>NEXT</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="details" id="user"></p>
+                        </td>
+                        <td>
+                            <p class="details" id="money"></p>
+                        </td>
+                        <td>
+                            <p class="details" id="player_level"></p>
+                        </td>
+                        <td>
+                            <p class="details" id="player_next_level"></p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
             <div class="top-screen">
                 <h1>Li'l Thug Outlaw</h1>
                 <div class="main-bg">
@@ -43,7 +97,7 @@
             <div id="grid-wrapper">
                 <div id="grid-container">
                     <div class="menu-item">
-                        <div class="user-details">
+                        <div>
                             <table>
                                 <tr>
                                     <th>CASH</th>
@@ -132,7 +186,10 @@
                         <label>Volume<input type="range" name="music" min="0" max="10" value="5"></label>
                     </fieldset>
                     <div class="menu">
-                        <button onClick="saveSettings(this)">SAVE</button>
+                        <button onClick="saveSettings(this)">SAVE SETTINGS</button>
+                        <button style="display: inline-block; width:49%" onClick="onLogoutClick()">LOGOUT</button>
+                        <button style="display: inline-block; width:49%" onClick="onDeleteClick()">DELETE
+                            ACCOUNT</button>
                     </div>
                     <fieldset>
                         <legend>Controls</legend>
@@ -161,7 +218,10 @@
                 </div>
             </div>
         </div>
+
+        <div id="footer">2020 (Next Level Games)</div>
     </div>
+
 
     <div id="resources">
         <div>

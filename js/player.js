@@ -31,9 +31,12 @@ class Player {
         weaponSprite.setOrigin(0.5)
         weaponSprite.name = this.weapon.name;
         this.weapon.sprite = weaponSprite;
-        this.weapon.ammo = game.weapons[this.weapon.name].currentAmmo;
-        this.weapon.clip = this.weapon.clipSize;
         this.weapon.isReloading = false;
+
+        // set first clip in weapon
+        this.weapon.currentAmmo = game.weapons[this.weapon.name].currentAmmo;
+        this.weapon.clip = game.weapons[this.weapon.name].currentAmmo > this.weapon.clipSize ? this.weapon.clipSize : game.weapons[this.weapon.name].currentAmmo;
+        this.weapon.currentAmmo -= this.weapon.clip;
 
         // add sprites to container
         this.playerContainer.add(this.sprite);
@@ -143,7 +146,7 @@ class Player {
                     world.spawnBullet(world.player.playerContainer.x + this.playerContainer.getByName(this.weapon.name).x + spawnOffset.x, world.player.playerContainer.y + this.playerContainer.getByName(this.weapon.name).y + spawnOffset.y, this.sprite.flipX ? true : false);
                     audio.shoot.play('', { 'volume': audio.volume.sfx });
                     this.weapon.clip--;
-                    ui.updateText(ui.textTypes.AMMO, this.weapon.clip + '/' + (this.weapon.ammo < 0 ? '--' : this.weapon.ammo));
+                    ui.updateText(ui.textTypes.AMMO, this.weapon.clip + '/' + (this.weapon.currentAmmo < 0 ? '--' : this.weapon.currentAmmo));
                 }
             }
         } else {
@@ -151,6 +154,17 @@ class Player {
                 this.reloadWeapon();
             }
         }
+    }
+
+    unloadWeapon() {
+        this.weapon.currentAmmo += this.weapon.clip;
+        // update storage
+        game.weapons[this.weapon.name] = this.weapon;
+        user["weapons"] = game.weapons;
+        localStorage.setItem('user', JSON.stringify(user));
+        let idx = accounts.findIndex(account => account.id === user.id);
+        accounts[idx] = user;
+        localStorage.setItem('accounts', JSON.stringify(accounts));
     }
 
     reloadWeapon() {
@@ -161,23 +175,52 @@ class Player {
                 audio.reload.play('', { 'volume': audio.volume.sfx });
 
                 // update ui
-                var feedback = this.weapon.ammo > 0 ? 'Reloading...' : this.weapon.ammo < 0 ? 'Unlimited... ' : 'Empty...';
+                var feedback = this.weapon.currentAmmo > 0 ? 'Reloading...' : 'Empty...';
                 ui.updateText(ui.textTypes.AMMO, feedback);
                 setTimeout(() => {
-                    if (this.weapon.ammo > this.weapon.clipSize) {
-                        this.weapon.ammo -= (this.weapon.clipSize - this.weapon.clip);
+                    /*if (this.weapon.currentAmmo > this.weapon.clipSize) {
+                        this.weapon.currentAmmo -= (this.weapon.clipSize - this.weapon.clip);
                         this.weapon.clip = this.weapon.clipSize;
-                    } else if (this.weapon.ammo > 0) {
-                        this.weapon.clip = this.weapon.ammo;
-                        this.weapon.ammo = 0;
+                    } else if (this.weapon.currentAmmo > 0) {
+                        console.log('last clip')
+                        this.weapon.clip = this.weapon.currentAmmo;
+                        this.weapon.currentAmmo = 0;
                     } else {
                         audio.empty.play('', { 'volume': audio.volume.sfx });
-                    }
+                    }*/
+
+                    /*if (this.weapon.currentAmmo >= bulletsNeeded) {
+                        // full clip
+                        newClip = bulletsNeeded;
+                        this.weapon.currentAmmo -= bulletsNeeded;
+                        this.weapon.clip += newClip;
+                    } else if (this.weapon.currentAmmo > 0) {
+                            // half clip
+                            newClip = this.weapon.currentAmmo;
+                            // this.weapon.clip += newClip;
+                    } else {
+                        audio.empty.play('', { 'volume': audio.volume.sfx });
+                    }*/
+                    var bulletsNeeded = this.weapon.clipSize - this.weapon.clip;
+                    var newClip = this.weapon.currentAmmo >= bulletsNeeded ? bulletsNeeded : this.weapon.currentAmmo > 0 ? this.weapon.currentAmmo : 0;
+                    if (!newClip) audio.empty.play('', { 'volume': audio.volume.sfx });
+                    this.weapon.currentAmmo -= newClip;
+                    this.weapon.clip += newClip;
+                    // this.weapon.currentAmmo = this.weapon.clipSize * 2;
+                    // this.weapon.clip = this.weapon.clipSize;
 
                     // update ui
-                    feedback = this.weapon.clip + '/' + this.weapon.ammo;
+                    feedback = this.weapon.clip + '/' + this.weapon.currentAmmo;
                     ui.updateText(ui.textTypes.AMMO, feedback);
                     this.weapon.isReloading = false;
+
+                    // update storage
+                    game.weapons[this.weapon.name] = this.weapon;
+                    user["weapons"] = game.weapons;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    let idx = accounts.findIndex(account => account.id === user.id);
+                    accounts[idx] = user;
+                    localStorage.setItem('accounts', JSON.stringify(accounts));
                 }, this.weapon.reloadDuration);
             }
         }
@@ -197,13 +240,13 @@ class Player {
 
         // add to weapon obj and player container
         this.weapon.sprite = weaponSprite;
-        this.weapon.ammo = game.weapons[this.weapon.name].currentAmmo;
+        this.weapon.currentAmmo = game.weapons[this.weapon.name].currentAmmo;
         this.weapon.clip = this.weapon.clipSize;
 
         this.playerContainer.add(weaponSprite);
 
         // update ui with new weapon
-        ui.updateText(ui.textTypes.AMMO, this.weapon.clip + '/' + (this.weapon.ammo < 0 ? '--' : this.weapon.ammo));
+        ui.updateText(ui.textTypes.AMMO, this.weapon.clip + '/' + (this.weapon.currentAmmo < 0 ? '--' : this.weapon.currentAmmo));
     }
 
     stopShooting() {

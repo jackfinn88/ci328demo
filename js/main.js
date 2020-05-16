@@ -44,7 +44,7 @@ function preload() {
     game = this;
     game.score = 0;
 
-    this.weapons = weapons;
+    this.weapons = user["weapons"];
 
     // load media
     media["image"].forEach((image) => {
@@ -61,7 +61,8 @@ function preload() {
     });
 
     // map made with Tiled in JSON format
-    this.load.tilemapTiledJSON('map', level.tilemap);
+    // this.load.tilemapTiledJSON('map', level.tilemap);
+    this.load.tilemapTiledJSON('map', level.data.tilemap);
 }
 
 /**
@@ -95,6 +96,7 @@ function create() {
     input.add('SPACE', Phaser.Input.Keyboard.KeyCodes.SPACE, function () { world.player.startShooting(); }, function () { world.player.stopShooting(); });
     input.add('P', Phaser.Input.Keyboard.KeyCodes.P, function () { pauseGame(false); }, undefined);
     input.add('R', Phaser.Input.Keyboard.KeyCodes.R, function () { world.player.reloadWeapon(); }, undefined);
+    input.add('Q', Phaser.Input.Keyboard.KeyCodes.Q, function () { testWin(); }, undefined);
 
     // set the boundaries of our game world
     this.physics.world.bounds.width = groundLayer.width;
@@ -110,13 +112,17 @@ function create() {
     this.cameras.main.startFollow(world.player.playerContainer, true, 0.05, 0.05);
 
     // set background color, so the sky is not black    
-    this.cameras.main.setBackgroundColor(level.background); // tbd: update from level data
+    this.cameras.main.setBackgroundColor(level.data.background);
 
     initializeAnimations();
     initializeMapObjects();
 
     ui.updateMenuDisplay(false);
     updateUI();
+}
+
+function testWin() {
+    levelComplete();
 }
 
 function pauseGame(gameOver) {
@@ -139,7 +145,7 @@ function updateUI() {
     ui.updateText(ui.textTypes.HEALTH, world.player.health);
     ui.updateText(ui.textTypes.ARMOR, world.player.armor);
     ui.updateText(ui.textTypes.CASH, user["money"]);
-    ui.updateText(ui.textTypes.AMMO, world.player.weapon.clip + '/' + world.player.weapon.ammo);
+    ui.updateText(ui.textTypes.AMMO, world.player.weapon.clip + '/' + world.player.weapon.currentAmmo);
 }
 
 function update() {
@@ -176,13 +182,15 @@ function onCollisionPlayerDrop(player, drop) {
     var increment;
     if (drop.type === 'ammo') {
         increment = world.player.weapon.clipSize;
-        world.player.weapon.ammo += increment;
-        weapons[world.player.weapon.name].currentAmmo += weapons[world.player.weapon.name].clipSize;
+        world.player.weapon.currentAmmo += increment;
 
-        localStorage.setItem('weapons', JSON.stringify(weapons));
-        weapons = JSON.parse(localStorage.getItem('weapons'));
+        // update save data
+        let idx = accounts.findIndex(account => account.id === user.id);
+        accounts[idx] = user;
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('accounts', JSON.stringify(accounts));
 
-        ui.updateText(ui.textTypes.AMMO, world.player.weapon.clip + '/' + world.player.weapon.ammo);
+        ui.updateText(ui.textTypes.AMMO, world.player.weapon.clip + '/' + world.player.weapon.currentAmmo);
     } else if (drop.type === 'cash') {
         // increase reward if playing hard
         var max = 20 + (user["difficulty"] * 10);
@@ -192,7 +200,11 @@ function onCollisionPlayerDrop(player, drop) {
         user["money"] = parseInt(user["money"], 10) + increment;
 
         localStorage.setItem('user', JSON.stringify(user));
-        user = JSON.parse(localStorage.getItem('user'));
+        let idx = accounts.findIndex(account => account.id === user.id);
+        accounts[idx] = user;
+        localStorage.setItem('accounts', JSON.stringify(accounts));
+
+        updateRecord();
 
         ui.updateText(ui.textTypes.CASH, user["money"]);
     }
@@ -208,6 +220,7 @@ function onCollisionBulletPlayer(player, bullet) {
     var dist = distance({ 'x': bullet.startX, 'y': bullet.startY }, player);
     var damageReduction = dist > 500 ? 0.7 : dist > 300 ? 0.9 : 1;
     var damage = bullet.damage * damageReduction;
+    console.log(damage)
 
     // kill or reduce enemy health
     if (!world.player.isDead) {
@@ -256,7 +269,7 @@ function onCollisionPlayerLadder() {
 }
 
 function onCollisionPlayerObjective(player, item) {
-    ui.updateText(ui.textTypes.OBJECTIVE, level.hintText);
+    ui.updateText(ui.textTypes.OBJECTIVE, level.data.hintText);
     game.objectiveComplete = true;
 
     item.destroy();
@@ -271,7 +284,7 @@ function onCollisionPlayerExit() {
             // end game
             levelComplete();
         } else {
-            ui.updateText(ui.textTypes.OBJECTIVE, level.objectiveText);
+            ui.updateText(ui.textTypes.OBJECTIVE, level.data.objectiveText);
         }
 
         // periodically check player is still overlapping exit
@@ -284,17 +297,33 @@ function onCollisionPlayerExit() {
 }
 
 function levelComplete() {
+    // parse user data 
+    var userMoney = parseInt(user["money"], 10);
+    var userExp = parseInt(user["exp"], 10);
+    var userTotalExp = parseInt(user["total-exp"], 10);
+    var gameLevel = parseInt(user["game-level"], 10);
+
     // save rewards
-    user["money"] += level.cashReward;
-    user["exp"] += (game.score + level.expReward);
-    user["total-exp"] += (game.score + level.expReward);
+    user["money"] = userMoney + level.data.cashReward;
+    user["exp"] = userExp + (game.score + level.data.expReward);
+    user["total-exp"] = userTotalExp + (game.score + level.data.expReward);
 
     // check if level increases
-    if (user["exp"] >= user["player_next_level"]) {
+    var userNextLevel = parseInt(user["player_next_level"], 10);
+    if (user["exp"] >= userNextLevel) {
         levelUp();
     }
 
+    // unlock next level
+    var nextLevelId = level.id + 1;
+    user["game_level"] = Math.max(user["game_level"], nextLevelId);
+
+    let idx = accounts.findIndex(account => account.id === user.id);
+    accounts[idx] = user;
     localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('accounts', JSON.stringify(accounts));
+
+    updateRecord();
 
     audio.win.play('', { 'volume': audio.volume.sfx });
 
@@ -302,10 +331,22 @@ function levelComplete() {
 }
 
 function levelUp() {
-    user["exp"] = (user["total-exp"] - user["player_next_level"]);
-    user["player_level"] += 1;
+    // parse user data 
+    var userExp = parseInt(user["exp"], 10);
+    var userLevel = parseInt(user["player_level"], 10);
+    var userNextLevel = parseInt(user["player_next_level"], 10);
+
+    user["exp"] = (userExp - userNextLevel);
+    user["player_level"] = userLevel + 1;
     // increase threshold value by 20% for next level
-    user["player_next_level"] += Math.ceil((user["player_next_level"] * 0.2) / 100) * 100;
+    user["player_next_level"] = userNextLevel + Math.ceil((userNextLevel * 0.2) / 100) * 100;
+
+    let idx = accounts.findIndex(account => account.id === user.id);
+    accounts[idx] = user;
+    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('accounts', JSON.stringify(accounts));
+
+    updateRecord();
 
     // check if remaining exp can still level up
     if (user["exp"] >= user["player_next_level"]) {
@@ -336,6 +377,7 @@ function restartGame() {
 }
 
 function destroyGame() {
+    world.player.unloadWeapon();
     world.cleanup();
 
     // remove canvas
@@ -403,7 +445,7 @@ function initializeMapObjects() {
     if (objectiveLayer) {
         var objectiveObjects = objectiveLayer['objects'];
         objectiveObjects.forEach(objectiveObject => {
-            var objective = game.objectives.create(objectiveObject.x, objectiveObject.y - objectiveObject.height, level.objectiveItem).setOrigin(0, 0);
+            var objective = game.objectives.create(objectiveObject.x, objectiveObject.y - objectiveObject.height, level.data.objectiveItem).setOrigin(0, 0);
             objective.body.setSize(objective.width, objective.height).setOffset(objective.width * 0.5, objective.height * 0.5);
         });
     }

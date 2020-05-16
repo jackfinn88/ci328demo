@@ -10,10 +10,10 @@
         },
         "damage": 20,
         "clipSize": 15,
-        "currentAmmo": 0,
+        "currentAmmo": 150,
         "recoilX": false,
         "reloadDuration": 750,
-        "unlocksAt": 0,
+        "unlocksAt": 1,
         "purchased": true,
         "price": 500,
         "ammoPrice": 100
@@ -32,9 +32,9 @@
         "currentAmmo": 0,
         "recoilX": true,
         "reloadDuration": 1000,
-        "unlocksAt": 1,
+        "unlocksAt": 3,
         "purchased": false,
-        "price": 500,
+        "price": 1500,
         "ammoPrice": 100
     },
     "machine_pistol": {
@@ -51,9 +51,9 @@
         "currentAmmo": 0,
         "recoilX": false,
         "reloadDuration": 700,
-        "unlocksAt": 2,
+        "unlocksAt": 4,
         "purchased": false,
-        "price": 500,
+        "price": 2000,
         "ammoPrice": 100
     },
     "smg": {
@@ -70,10 +70,10 @@
         "currentAmmo": 0,
         "recoilX": false,
         "reloadDuration": 750,
-        "unlocksAt": 3,
+        "unlocksAt": 2,
         "purchased": false,
-        "price": 500,
-        "ammoPrice": 100
+        "price": 1000,
+        "ammoPrice": 125
     },
     "rifle": {
         "name": "rifle",
@@ -89,10 +89,10 @@
         "currentAmmo": 0,
         "recoilX": false,
         "reloadDuration": 850,
-        "unlocksAt": 3,
+        "unlocksAt": 4,
         "purchased": false,
-        "price": 500,
-        "ammoPrice": 100
+        "price": 2000,
+        "ammoPrice": 150
     },
     "ak47": {
         "name": "ak47",
@@ -108,10 +108,10 @@
         "currentAmmo": 0,
         "recoilX": true,
         "reloadDuration": 850,
-        "unlocksAt": 3,
+        "unlocksAt": 5,
         "purchased": false,
-        "price": 500,
-        "ammoPrice": 100
+        "price": 2500,
+        "ammoPrice": 150
     },
     "shotgun": {
         "name": "shotgun",
@@ -130,7 +130,7 @@
         "reloadDuration": 1250,
         "unlocksAt": 3,
         "purchased": false,
-        "price": 500,
-        "ammoPrice": 100
+        "price": 1500,
+        "ammoPrice": 200
     }
 }

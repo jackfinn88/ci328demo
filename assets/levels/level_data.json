@@ -8,7 +8,7 @@
         "hintText": "Now get out of there, quickly!",
         "killReward": 40,
         "cashReward": 500,
-        "expReward": 100
+        "expReward": 200
     },
     "2": {
         "tilemap": "assets/levels/level02.json",
@@ -19,7 +19,7 @@
         "hintText": "Great, now get it to the buyer, quickly!",
         "killReward": 50,
         "cashReward": 650,
-        "expReward": 200
+        "expReward": 300
     },
     "3": {
         "tilemap": "assets/levels/level03.json",
@@ -30,6 +30,6 @@
         "hintText": "Good! Now get it to the dropoff!",
         "killReward": 70,
         "cashReward": 800,
-        "expReward": 300
+        "expReward": 500
     }
 }

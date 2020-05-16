@@ -13,10 +13,10 @@ class Audio {
         this.win = game.sound.add('win');
         this.gameOver = game.sound.add('game_over');
         this.playerDeath = game.sound.add('player_death');
-        this.enemyDeath = game.sound.add('enemyDeath');
-        this.music = game.sound.add(level.music, true);
+        this.enemyDeath = game.sound.add('enemy_death');
+        this.music = game.sound.add(level.data.music, true);
         this.music.play('', { 'volume': this.volume.music });
-
+        this.music.loop = true;
     }
 }
 
@@ -88,7 +88,7 @@ class UI {
             font: '20px Arial',
             fill: '#fff'
         });
-        this.objectiveText = game.add.text(20, 80, level.objectiveText, {
+        this.objectiveText = game.add.text(20, 80, level.data.objectiveText, {
             font: '20px Arial',
             fill: '#fff',
             align: 'center'
@@ -182,9 +182,9 @@ class UI {
             } else {
                 // win
                 infoEl.textContent = 'Well done!';
-                scoreEl.textContent = 'XP: ' + (game.score + level.expReward);
+                scoreEl.textContent = 'XP: ' + (game.score + level.data.expReward);
                 scoreEl.style.display = 'block';
-                cashEl.textContent = 'Earned: £' + level.cashReward;
+                cashEl.textContent = 'Earned: £' + level.data.cashReward;
                 cashEl.style.display = 'block';
                 buttons[0].textContent = 'Continue';
                 buttons[1].textContent = 'Retry';

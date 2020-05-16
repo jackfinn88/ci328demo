@@ -28,14 +28,16 @@ class EntityFactory {
 
     }
 
-    spawnAsBullet(x, y, velocity) {
+    spawnAsBullet(x, y, velocity, enemy) {
         var bullet = this.group.get(x, y);
+        // var damage = !enemy ? world.player.weapon.damage : user["game_level"] > 2 ? 40 : user["game_level"] > 1 ? 45 : 35;
+        var damage = !enemy ? world.player.weapon.damage : level.id > 2 ? 45 : level.id > 1 ? 40 : 35;
 
         if (bullet) {
             bullet.flipX = velocity ? true : false
             bullet.startX = x;
             bullet.startY = y;
-            bullet.damage = world.player.weapon.damage;
+            bullet.damage = damage;
             bullet.body.allowGravity = false;
             bullet.outOfBoundsKill = true;
             bullet.checkWorldBounds = true;
@@ -61,7 +63,8 @@ class EntityFactory {
         var sprite = game.add.sprite(0, 0, enemyType);
         sprite.name = 'enemy';
 
-        var weaponKey = user["game_level"] > 2 ? 'rifle' : user["game_level"] > 1 ? 'ak47' : 'smg';
+        // var weaponKey = user["game_level"] > 2 ? 'rifle' : user["game_level"] > 1 ? 'ak47' : 'smg';
+        var weaponKey = level.id > 2 ? 'ak47' : level.id > 1 ? 'rifle' : 'smg';
         // add enemy weapon
         var weapon = enemyType + '_' + weaponKey;
         var rifle = game.add.sprite(10, 20, weapon);
@@ -258,15 +261,16 @@ class EnemyControl extends Control {
 
         setTimeout(() => {
             this.container.destroy();
-            audio.explode.play('', { 'volume': audio.volume.sfx });
+            audio.enemyDeath.play('', { 'volume': audio.volume.sfx });
 
-            game.score += level.killReward;
+            game.score += level.data.killReward;
             ui.updateText(ui.textTypes.SCORE, game.score);
 
             // generate player item drop
             var rand = Math.random();
-            if (rand > 0.3) {
-                var randomDrop = rand > 0.7 ? 'cash' : 'ammo';
+            console.log('rand', rand)
+            if (rand > 0.05) {
+                var randomDrop = rand > 0.6 ? 'cash' : 'ammo';
                 world.playerDropsFactory.spawnAsDrop(this.container.x, this.container.y, randomDrop);
             }
         }, 500);
@@ -317,11 +321,11 @@ class World {
     }
 
     spawnBullet(x, y, velocity) {
-        this.bulletFactory.spawnAsBullet(x, y, velocity);
+        this.bulletFactory.spawnAsBullet(x, y, velocity, false);
     }
 
     spawnEnemyBullet(x, y, velocity) {
-        this.enemyBulletFactory.spawnAsBullet(x, y, velocity);
+        this.enemyBulletFactory.spawnAsBullet(x, y, velocity, true);
     }
 
     update() {
