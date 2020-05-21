@@ -9,7 +9,7 @@ var registerForm;
 var errorUI;
 var account;
 var accounts;
-var PHP_API_SERVER = 'https://jlf40.brighton.domains/dump/angular/test/api/api';
+var PHP_API_SERVER = 'https://jlf40.brighton.domains/ci301/app/api';
 
 function init() {
     // check storage
